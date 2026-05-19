@@ -129,9 +129,11 @@ def ensure_project_identity_schema(cursor):
         FROM INFORMATION_SCHEMA.COLUMNS
         WHERE TABLE_SCHEMA = DATABASE()
           AND TABLE_NAME = 'projects'
-          AND COLUMN_NAME IN ('project_prefix', 'project_year', 'project_sequence')
+          AND COLUMN_NAME IN ('project_code', 'project_prefix', 'project_year', 'project_sequence')
     """)
     existing_cols = {row['COLUMN_NAME'] for row in cursor.fetchall()}
+    if 'project_code' not in existing_cols:
+        cursor.execute("ALTER TABLE projects ADD COLUMN project_code VARCHAR(50) DEFAULT NULL AFTER id")
     if 'project_prefix' not in existing_cols:
         cursor.execute("ALTER TABLE projects ADD COLUMN project_prefix VARCHAR(20) DEFAULT NULL AFTER project_code")
     if 'project_year' not in existing_cols:
