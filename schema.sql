@@ -53,8 +53,6 @@ CREATE TABLE IF NOT EXISTS projects (
     created_by  INT DEFAULT NULL,
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
-    UNIQUE KEY uq_projects_company_name (company_name),
-    UNIQUE KEY uq_projects_contact_number (contact_number),
     INDEX idx_status (status),
     INDEX idx_created_by (created_by)
 );

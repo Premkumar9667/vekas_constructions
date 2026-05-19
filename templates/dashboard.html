@@ -45,6 +45,8 @@ tailwind.config={theme:{extend:{colors:{
   .team-card:hover::before{animation:glowSweep .9s ease}
   .nav-pill-active{background:#75d1fd;color:#005976;font-weight:700}
   .nav-pill-muted{color:#40484e}
+  .customer-filter-active{background:#e7f2fb;color:#005375;border-color:#75d1fd}
+  .customer-filter-muted{color:#40484e;border-color:transparent}
   .view-toggle-active{background:#1E6C93;color:#fff}
   .view-toggle-muted{background:#fff;color:#40484e}
   .dashboard-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
@@ -177,6 +179,24 @@ tailwind.config={theme:{extend:{colors:{
   <button type="button" id="overview-nav" onclick="showDashboardView('overview')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all nav-pill-active">
     <span class="material-symbols-outlined">dashboard</span> Overview
   </button>
+  <div class="pt-4">
+    <p class="px-3 mb-2 text-[11px] font-black uppercase tracking-wide text-outline">Clients</p>
+    <button type="button" onclick="setCustomerFilter('', this)" class="customer-filter-btn customer-filter-active w-full flex items-center justify-between gap-3 px-3 py-2 rounded-lg border text-sm transition-all">
+      <span class="flex items-center gap-2 min-w-0">
+        <span class="material-symbols-outlined text-base">groups</span>
+        <span class="truncate">All Clients</span>
+      </span>
+      <span class="text-xs font-bold">{{ total_projects }}</span>
+    </button>
+    <div class="mt-1 max-h-64 overflow-y-auto space-y-1 pr-1">
+      {% for customer in customer_groups %}
+      <button type="button" onclick="setCustomerFilter('{{ customer.name|lower|replace("'","\\'")|e }}', this)" class="customer-filter-btn customer-filter-muted w-full flex items-center justify-between gap-3 px-3 py-2 rounded-lg border text-sm transition-all hover:bg-surface-container-highest">
+        <span class="truncate">{{ customer.name }}</span>
+        <span class="text-xs font-bold">{{ customer.count }}</span>
+      </button>
+      {% endfor %}
+    </div>
+  </div>
   {% if is_admin %}
   <button type="button" id="team-nav" onclick="showDashboardView('team')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all nav-pill-muted hover:bg-surface-container-highest">
     <span class="material-symbols-outlined">group</span> Team
@@ -300,6 +320,7 @@ tailwind.config={theme:{extend:{colors:{
         <div class="project-card card-appear bg-foundation-white rounded-xl border border-outline-variant overflow-hidden hover:shadow-md transition-shadow"
              data-name="{{ p.name|lower }}"
              data-client="{{ (p.client_name or '')|lower }}"
+             data-customer="{{ (p.customer_name or p.client_name or '')|lower }}"
              data-status="{{ p.status }}"
              data-city="{{ (p.city or '')|lower }}"
              data-state="{{ (p.state or '')|lower }}"
@@ -611,7 +632,7 @@ tailwind.config={theme:{extend:{colors:{
           </div>
           <div class="form-field">
             <label for="cp-company">Company Name *</label>
-            <input id="cp-company" type="text" placeholder="Enter unique company name" required class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm"/>
+            <input id="cp-company" type="text" placeholder="Enter company name" required class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm"/>
           </div>
           <div class="form-field">
             <label for="cp-customer">Customer Name *</label>
@@ -834,6 +855,19 @@ document.addEventListener('click', e => {
 
 // ── Search & filter ──
 let activeTeamDays = 'all';
+let activeCustomerFilter = '';
+
+function setCustomerFilter(customer, btn) {
+  activeCustomerFilter = customer || '';
+  document.querySelectorAll('.customer-filter-btn').forEach(b => {
+    b.classList.remove('customer-filter-active');
+    b.classList.add('customer-filter-muted');
+  });
+  btn?.classList.add('customer-filter-active');
+  btn?.classList.remove('customer-filter-muted');
+  showDashboardView('overview');
+  filterProjects();
+}
 
 function showDashboardView(view) {
   if (view === 'team' && !document.getElementById('team-section')) {
@@ -909,6 +943,7 @@ function filterProjects() {
     const created = createdDate ? new Date(`${createdDate}T00:00:00`) : null;
     const nameMatch   = !q  || c.dataset.name.includes(q) || (c.dataset.client || '').includes(q);
     const clientMatch = !client || c.dataset.client === client;
+    const customerMatch = !activeCustomerFilter || c.dataset.customer === activeCustomerFilter;
     const statusMatch = !st || c.dataset.status === st;
     const cityMatch = !city || c.dataset.city === city;
     const stateMatch = !state || c.dataset.state === state;
@@ -927,7 +962,7 @@ function filterProjects() {
       dayMatch = false;
     }
 
-    const show = nameMatch && clientMatch && statusMatch && cityMatch && stateMatch && districtMatch && dayMatch;
+    const show = nameMatch && clientMatch && customerMatch && statusMatch && cityMatch && stateMatch && districtMatch && dayMatch;
     c.style.display = show ? '' : 'none';
     if (show) visible++;
   });

@@ -146,15 +146,8 @@ def ensure_project_identity_schema(cursor):
           AND TABLE_NAME = 'projects'
           AND INDEX_NAME IN ('uq_projects_company_name', 'uq_projects_contact_number')
     """)
-    existing_indexes = {row['INDEX_NAME'] for row in cursor.fetchall()}
-    try:
-        if 'uq_projects_company_name' not in existing_indexes:
-            cursor.execute("CREATE UNIQUE INDEX uq_projects_company_name ON projects (company_name)")
-        if 'uq_projects_contact_number' not in existing_indexes:
-            cursor.execute("CREATE UNIQUE INDEX uq_projects_contact_number ON projects (contact_number)")
-    except Exception:
-        # Existing duplicate legacy data can block index creation; create_project still enforces uniqueness.
-        pass
+    for row in cursor.fetchall():
+        cursor.execute(f"DROP INDEX {row['INDEX_NAME']} ON projects")
 
 
 def generate_project_code(cursor, prefix=None, year=None):
@@ -548,12 +541,23 @@ def dashboard():
         conn.close()
 
         # Enrich project data
+        customer_groups = {}
         for p in projects:
             p['storage_display'] = fmt_size(p['storage_bytes'] or 0)
             if p.get('start_date'):
                 p['start_date_display'] = p['start_date'].strftime('%b %Y')
             else:
                 p['start_date_display'] = '—'
+
+        for p in projects:
+            customer_key = (p.get('customer_name') or p.get('client_name') or '').strip()
+            if customer_key:
+                customer_groups[customer_key] = customer_groups.get(customer_key, 0) + 1
+
+        customer_groups = [
+            {'name': name, 'count': count}
+            for name, count in sorted(customer_groups.items(), key=lambda item: item[0].lower())
+        ]
 
         now = datetime.now()
         for u in team_members:
@@ -581,6 +585,7 @@ def dashboard():
                                total_users=total_users,
                                portfolio_storage=portfolio_storage,
                                team_members=team_members,
+                               customer_groups=customer_groups,
                                is_admin=is_admin)
 
     except Exception as e:
@@ -589,6 +594,7 @@ def dashboard():
                                total_projects=0, active_count=0,
                                total_users=0, portfolio_storage='0 B',
                                team_members=[],
+                               customer_groups=[],
                                is_admin=session.get('user_role') == 'admin')
 
 
@@ -609,7 +615,6 @@ def create_project():
     client_name = (data.get('clientName') or '').strip() or customer_name
     job_position = (data.get('jobPosition') or '').strip()
     contact_number = normalize_india_phone(data.get('contactNumber'))
-    contact_digits = india_phone_digits(data.get('contactNumber'))
     whatsapp_number = normalize_india_phone(data.get('whatsappNumber'))
     email_id = (data.get('emailId') or '').strip()
     address = (data.get('address') or '').strip()
@@ -641,18 +646,6 @@ def create_project():
         conn   = get_db()
         cursor = conn.cursor()
         ensure_project_identity_schema(cursor)
-        cursor.execute("SELECT id FROM projects WHERE LOWER(company_name) = LOWER(%s) LIMIT 1", (company_name,))
-        if cursor.fetchone():
-            conn.close()
-            return jsonify({'success': False, 'error': 'Company name already exists. Please use a unique company name.'}), 400
-        if contact_number:
-            cursor.execute(
-                "SELECT id FROM projects WHERE contact_number IN (%s, %s) LIMIT 1",
-                (contact_number, contact_digits)
-            )
-            if cursor.fetchone():
-                conn.close()
-                return jsonify({'success': False, 'error': 'Contact number already exists. Please use a unique contact number.'}), 400
 
         project_code, project_prefix, project_year, project_sequence = generate_project_code(cursor, project_prefix, project_year)
         cursor.execute("""
@@ -690,10 +683,6 @@ def create_project():
         })
     except pymysql.err.IntegrityError as e:
         message = str(e)
-        if 'company' in message.lower():
-            message = 'Company name already exists. Please use a unique company name.'
-        elif 'contact' in message.lower():
-            message = 'Contact number already exists. Please use a unique contact number.'
         return jsonify({'success': False, 'error': message}), 400
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
