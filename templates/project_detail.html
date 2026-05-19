@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>{{ project.name }} — VEKAS Construction</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>
+tailwind.config={theme:{extend:{colors:{
+  "bb":"#1E6C93","sky":"#49AAD4","dark":"#212121",
+  "white":"#FFFFFF","surf":"#fcf9f8","bg":"#fcf9f8",
+  "on-surf":"#1b1c1c","on-var":"#40484e","outline":"#70787f",
+  "out-var":"#c0c7cf","surf-low":"#f6f3f2","surf-mid":"#f0eded",
+  "surf-high":"#eae7e7","surf-lo":"#ffffff","surf-hi":"#e5e2e1",
+  "sec-c":"#75d1fd","on-sec-c":"#005976",
+  "pri":"#005375","pri-c":"#1e6c93","on-pri":"#ffffff",
+  "err":"#ba1a1a","sec":"#006686"
+}}}}
+</script>
+<style>
+:root{--bb:#1E6C93;--sky:#49AAD4;--dark:#212121}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;padding:0;font-family:'Hanken Grotesk',sans-serif;background:#fcf9f8;font-size:16px}
+.mat{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-family:'Material Symbols Outlined'}
+.ai-disabled{opacity:.62;cursor:not-allowed!important;box-shadow:none!important}
+.ai-status-muted{display:flex;align-items:center;gap:6px;background:#fffbeb;border:1px solid #fcd34d;padding:4px 10px;border-radius:12px}
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#c0c7cf;border-radius:10px}
+::-webkit-scrollbar-thumb:hover{background:#1E6C93}
+/* ─── Layout ─── */
+.layout{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:260px;height:100vh;overflow-y:auto;flex-shrink:0;background:#f6f3f2;border-right:1px solid #c0c7cf;display:flex;flex-direction:column;padding:16px;position:fixed;left:0;top:0;z-index:40;transition:transform .3s ease}
+.main-wrap{flex:1;display:flex;flex-direction:column;margin-left:260px;height:100vh;overflow:hidden;transition:margin .3s ease}
+.top-bar{height:64px;flex-shrink:0;background:#fff;border-bottom:1px solid #c0c7cf;display:flex;align-items:center;padding:0 24px;justify-content:space-between;position:sticky;top:0;z-index:30}
+.page-content{flex:1;overflow-y:auto;overflow-x:hidden;padding:28px 32px 80px}
+/* ─── Sidebar nav ─── */
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;text-decoration:none;color:#40484e;font-size:15px;font-weight:500;transition:all .2s ease;cursor:pointer;border:none;background:none;width:100%}
+.nav-item:hover{background:#eae7e7;color:#1b1c1c}
+.nav-item.active{background:linear-gradient(135deg,#1E6C93,#49AAD4);color:#fff;font-weight:700;box-shadow:0 4px 14px rgba(30,108,147,.3)}
+.nav-item.active .mat{color:#fff}
+/* ─── Blueprint pattern ─── */
+.bp-bg{background-color:#0d2137;background-image:linear-gradient(rgba(73,170,212,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(73,170,212,.08) 1px,transparent 1px);background-size:30px 30px}
+/* ─── Cards ─── */
+.glass{background:rgba(255,255,255,.8);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(30,108,147,.12)}
+.card{background:#fff;border:1px solid #e5e2e1;border-radius:16px;transition:all .25s ease}
+.card:hover{box-shadow:0 8px 24px rgba(33,33,33,.1)}
+/* ─── Tabs ─── */
+.main-tab-btn{padding:13px 24px;font-size:16px;font-weight:600;border:none;background:none;cursor:pointer;color:#40484e;border-bottom:3px solid transparent;transition:all .2s;display:flex;align-items:center;gap:8px}
+.main-tab-btn.active{color:#1E6C93;border-bottom-color:#1E6C93}
+.main-tab-btn:hover:not(.active){color:#1b1c1c;background:#f6f3f2}
+.sub-tab-btn{padding:10px 20px;font-size:15px;font-weight:600;border:none;background:none;cursor:pointer;color:#40484e;border-bottom:2px solid transparent;transition:all .2s;display:flex;align-items:center;gap:6px}
+.sub-tab-btn.active{color:#1E6C93;border-bottom-color:#1E6C93}
+/* ─── File cards ─── */
+.file-card{background:#fff;border:1px solid #e5e2e1;border-radius:14px;overflow:hidden;cursor:pointer;transition:all .25s ease;position:relative}
+.file-card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(30,108,147,.15);border-color:#49AAD4}
+/* ─── Overlay/Modal ─── */
+.overlay{position:fixed;inset:0;background:rgba(13,33,55,.65);backdrop-filter:blur(6px);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .3s ease}
+.overlay.show{opacity:1;pointer-events:all}
+.modal-box{background:#fff;border-radius:20px;box-shadow:0 24px 80px rgba(0,0,0,.35);width:100%;max-width:860px;max-height:92vh;display:flex;flex-direction:column;transform:scale(.95) translateY(20px);transition:transform .3s ease,opacity .3s ease;opacity:0}
+.overlay.show .modal-box{transform:scale(1) translateY(0);opacity:1}
+/* ─── Chat bubbles ─── */
+.chat-msg{margin-bottom:16px;display:flex;gap:10px;animation:slideUp .3s ease both}
+.chat-msg.user{flex-direction:row-reverse}
+.chat-bubble{max-width:80%;padding:13px 18px;border-radius:18px;font-size:15px;line-height:1.6;white-space:pre-wrap}
+.chat-bubble.user{background:linear-gradient(135deg,#1E6C93,#005375);color:#fff;border-bottom-right-radius:4px}
+.chat-bubble.ai{background:#f0eded;color:#1b1c1c;border-bottom-left-radius:4px;border:1px solid #e5e2e1}
+.chat-avatar{width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+/* ─── Status badges ─── */
+.badge-planning{background:#e5e2e1;color:#40484e}
+.badge-in-progress{background:linear-gradient(135deg,#75d1fd,#49AAD4);color:#005976}
+.badge-review{background:#ffddb7;color:#653e00}
+.badge-completed{background:#d4edda;color:#155724}
+.badge-delayed{background:#ffdad6;color:#93000a}
+/* ─── Animations ─── */
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+.anim-up{animation:slideUp .4s ease both}
+.anim-fade{animation:fadeIn .4s ease both}
+.spin-anim{animation:spin 1s linear infinite}
+.typing-dot{width:8px;height:8px;border-radius:50%;background:#40484e;animation:pulse 1.4s ease-in-out infinite}
+.typing-dot:nth-child(2){animation-delay:.2s}
+.typing-dot:nth-child(3){animation-delay:.4s}
+/* ─── Upload drop ─── */
+.drop-zone{border:2px dashed #c0c7cf;border-radius:14px;transition:all .25s}
+.drop-zone.active{border-color:#1E6C93;background:rgba(30,108,147,.04)}
+/* ─── Progress ─── */
+.progress-bar{height:8px;border-radius:4px;background:#e5e2e1;overflow:hidden}
+.progress-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#1E6C93,#49AAD4);transition:width .6s ease;box-shadow:0 0 8px rgba(30,108,147,.4)}
+/* ─── Mobile ─── */
+.sidebar-toggle{display:none}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main-wrap{margin-left:0}
+  .sidebar-toggle{display:flex}
+  .page-content{padding:16px 16px 90px}
+}
+@media(max-width:1024px){
+  .sidebar{width:220px}
+  .main-wrap{margin-left:220px}
+}
+/* ─── Responsive grid ─── */
+.file-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+@media(max-width:640px){.file-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:400px){.file-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- ══ FLASH ══ -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div id="flash-wrap" style="position:fixed;top:16px;right:16px;z-index:300;display:flex;flex-direction:column;gap:8px;max-width:360px">
+{% for cat,msg in messages %}
+<div class="flash-msg anim-up" style="display:flex;align-items:flex-start;gap:10px;padding:13px 16px;border-radius:14px;font-size:14px;font-weight:500;box-shadow:0 6px 20px rgba(0,0,0,.15);
+  {% if cat=='success' %}background:#f0fdf4;border:1px solid #86efac;color:#166534
+  {% elif cat=='error' %}background:#fef2f2;border:1px solid #fca5a5;color:#991b1b
+  {% else %}background:#eff6ff;border:1px solid #93c5fd;color:#1e40af{% endif %}">
+  <span class="mat" style="font-size:18px;margin-top:1px">
+    {% if cat=='success' %}check_circle{% elif cat=='error' %}error{% else %}info{% endif %}
+  </span>
+  <span style="flex:1">{{ msg }}</span>
+  <button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;opacity:.6;font-size:16px">✕</button>
+</div>
+{% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<!-- ══ SIDEBAR OVERLAY (mobile) ══ -->
+<div id="sidebar-overlay" onclick="closeSidebar()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:35"></div>
+
+<!-- ══ LAYOUT ══ -->
+<div class="layout">
+
+<!-- ═══════════════ SIDEBAR ═══════════════ -->
+<aside class="sidebar" id="sidebar">
+  <!-- Logo -->
+  <div style="padding:12px 6px 20px;border-bottom:1px solid #e5e2e1;margin-bottom:16px">
+    <a href="{{ url_for('dashboard') }}" style="display:flex;align-items:center;gap:8px;text-decoration:none">
+      <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#1E6C93,#49AAD4);display:flex;align-items:center;justify-content:center">
+        <span class="mat" style="color:white;font-size:20px;font-variation-settings:'FILL' 1">architecture</span>
+      </div>
+      <span style="font-family:'Merriweather',serif;font-weight:700;font-size:17px;color:#1E6C93">VEKAS</span>
+    </a>
+  </div>
+
+  <!-- Project chip -->
+  <div style="background:linear-gradient(135deg,rgba(30,108,147,.1),rgba(73,170,212,.08));border:1px solid rgba(30,108,147,.2);border-radius:14px;padding:12px;margin-bottom:20px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:40px;height:40px;border-radius:10px;background:#1E6C93;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:14px;flex-shrink:0">
+        {{ project.name[:2].upper() }}
+      </div>
+      <div style="overflow:hidden">
+        <p style="font-weight:700;font-size:14px;color:#1b1c1c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0">{{ project.name }}</p>
+        <p style="font-size:11px;color:#70787f;text-transform:uppercase;letter-spacing:.06em;margin:2px 0 0">{{ project.status }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAV — ONLY Overview + Team -->
+  <nav style="flex:1">
+    <a href="{{ url_for('project_detail', project_id=project.id) }}" class="nav-item active">
+      <span class="mat">dashboard</span>
+      <span>Overview</span>
+    </a>
+  </nav>
+
+</aside>
+
+<!-- ═══════════════ MAIN WRAP ═══════════════ -->
+<div class="main-wrap">
+
+<!-- Top Bar -->
+<header class="top-bar">
+  <!-- Mobile toggle -->
+  <button class="sidebar-toggle mat" onclick="openSidebar()" style="background:none;border:none;cursor:pointer;font-size:24px;color:#40484e;margin-right:12px">menu</button>
+
+  <!-- Breadcrumb -->
+  <div style="display:flex;align-items:center;gap:6px;font-size:14px;color:#70787f;flex:1;min-width:0">
+    <a href="{{ url_for('dashboard') }}" style="color:#70787f;text-decoration:none;display:flex;align-items:center;gap:4px;hover:color:#1E6C93;transition:color .2s">
+      <span class="mat" style="font-size:16px">home</span>
+    </a>
+    <span class="mat" style="font-size:14px">chevron_right</span>
+    <span style="color:#1b1c1c;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ project.name }}</span>
+  </div>
+
+  <!-- Desktop nav -->
+  <nav style="display:flex;gap:24px;align-items:center;margin:0 24px">
+    <a href="{{ url_for('dashboard') }}" style="font-size:15px;color:#40484e;text-decoration:none;font-weight:500;transition:color .2s" class="hidden md:block">Dashboard</a>
+    <a href="{{ url_for('project_detail', project_id=project.id) }}" style="font-size:15px;color:#1E6C93;text-decoration:none;font-weight:700;border-bottom:2px solid #1E6C93;padding-bottom:2px" class="hidden md:block">Project</a>
+  </nav>
+
+  <!-- Right icons -->
+  <div style="display:flex;align-items:center;gap:8px">
+    <div style="position:relative;display:none" class="md:block">
+      <span class="mat" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:#70787f">search</span>
+      <input type="text" placeholder="Search…" style="padding:8px 12px 8px 34px;border:1px solid #c0c7cf;border-radius:24px;font-size:14px;outline:none;width:180px;background:#f6f3f2;transition:all .2s" onfocus="this.style.width='220px';this.style.borderColor='#49AAD4'" onblur="this.style.width='180px';this.style.borderColor='#c0c7cf'"/>
+    </div>
+    <button style="background:none;border:none;cursor:pointer;padding:8px;border-radius:10px;color:#40484e;transition:all .2s" onmouseover="this.style.background='#f0eded'" onmouseout="this.style.background='none'">
+      <span class="mat">notifications</span>
+    </button>
+    <div style="position:relative" id="user-menu-root">
+      <button onclick="toggleMenu('user-menu')" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#1E6C93,#49AAD4);color:#fff;border:none;cursor:pointer;font-weight:700;font-size:13px">
+        {{ current_user.name[:2].upper() }}
+      </button>
+      <div id="user-menu" style="display:none;position:absolute;right:0;top:calc(100% + 8px);width:200px;background:#fff;border:1px solid #e5e2e1;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.15);overflow:hidden;z-index:60">
+        <div style="padding:12px 16px;border-bottom:1px solid #e5e2e1">
+          <p style="font-weight:700;font-size:14px;margin:0">{{ current_user.name }}</p>
+          <p style="font-size:12px;color:#70787f;margin:2px 0 0">{{ current_user.email }}</p>
+        </div>
+        <a href="{{ url_for('logout') }}" style="display:flex;align-items:center;gap:8px;padding:12px 16px;color:#ba1a1a;text-decoration:none;font-size:14px;transition:background .2s" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='none'">
+          <span class="mat" style="font-size:16px">logout</span> Sign Out
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════ PAGE CONTENT (SCROLLABLE) ═══════════════ -->
+<main class="page-content" id="page-main">
+
+  <!-- Project Header -->
+  <div class="anim-up" style="margin-bottom:28px">
+    <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:16px">
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+          <span style="padding:5px 14px;border-radius:24px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em"
+            class="badge-{{ project.status|lower|replace(' ','-') }}">{{ project.status }}</span>
+          <span style="font-size:13px;color:#70787f;font-weight:500">{{ project.priority }} Priority</span>
+          {% if project.client_name %}
+          <span style="font-size:13px;color:#70787f;display:flex;align-items:center;gap:4px">
+            <span class="mat" style="font-size:14px">business</span> {{ project.client_name }}
+          </span>
+          {% endif %}
+        </div>
+        <h1 style="font-family:'Merriweather',serif;font-size:clamp(24px,4vw,36px);font-weight:900;color:#212121;margin:0 0 12px;line-height:1.2">
+          {{ project.name }}
+        </h1>
+        {% if project.description %}
+        <p id="proj-desc" style="font-size:16px;color:#40484e;line-height:1.7;max-width:720px;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">
+          {{ project.description }}
+        </p>
+        <button onclick="toggleDesc()" style="background:none;border:none;color:#1E6C93;cursor:pointer;font-size:14px;font-weight:600;margin-top:6px;padding:0;display:flex;align-items:center;gap:4px">
+          <span id="desc-more-text">Show more</span> <span class="mat" id="desc-more-icon" style="font-size:14px">expand_more</span>
+        </button>
+        {% endif %}
+      </div>
+      <!-- Actions -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start">
+        <button onclick="openUploadModal('Drawing')"
+          style="display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#1E6C93,#49AAD4);color:#fff;border:none;border-radius:12px;padding:12px 20px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(30,108,147,.3);transition:all .25s">
+          <span class="mat" style="font-size:18px">cloud_upload</span> Upload
+        </button>
+        <div style="position:relative">
+          <button onclick="toggleMenu('proj-menu')" id="proj-menu-btn"
+            style="background:#fff;border:1px solid #e5e2e1;border-radius:12px;padding:11px;cursor:pointer;display:flex;align-items:center;transition:all .2s">
+            <span class="mat">more_vert</span>
+          </button>
+          <div id="proj-menu" style="display:none;position:absolute;right:0;top:calc(100% + 8px);width:190px;background:#fff;border:1px solid #e5e2e1;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);overflow:hidden;z-index:50">
+            <button onclick="openStatusModal();closeMenu('proj-menu')" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 16px;background:none;border:none;cursor:pointer;font-size:14px;color:#1b1c1c;transition:background .15s" onmouseover="this.style.background='#f6f3f2'" onmouseout="this.style.background='none'">
+              <span class="mat" style="font-size:16px">edit</span> Edit Status
+            </button>
+            <a href="{{ url_for('project_files', project_id=project.id) }}" style="display:flex;align-items:center;gap:10px;padding:12px 16px;text-decoration:none;font-size:14px;color:#1b1c1c;transition:background .15s" onmouseover="this.style.background='#f6f3f2'" onmouseout="this.style.background='none'">
+              <span class="mat" style="font-size:16px">folder_open</span> All Files
+            </a>
+            <button onclick="confirmDelete();closeMenu('proj-menu')" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 16px;background:none;border:none;cursor:pointer;font-size:14px;color:#ba1a1a;transition:background .15s" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='none'">
+              <span class="mat" style="font-size:16px">delete</span> Delete Project
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MAIN TABS ══ -->
+  <div style="border-bottom:2px solid #e5e2e1;display:flex;margin-bottom:28px;overflow-x:auto" class="anim-up">
+    <button class="main-tab-btn active" id="mtab-blueprints" onclick="switchMainTab('blueprints')">
+      <span class="mat">architecture</span> Blueprints
+    </button>
+    <button class="main-tab-btn" id="mtab-ai-chat" onclick="switchMainTab('ai-chat')">
+      <span class="mat">smart_toy</span> AI Chat &amp; Analysis
+    </button>
+  </div>
+
+  <!-- ════════ BLUEPRINTS TAB ════════ -->
+  <div id="tab-blueprints">
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start">
+      <!-- Left -->
+      <div>
+        <!-- Upload Drop Zone -->
+        <div class="drop-zone anim-up" id="main-drop"
+             style="padding:40px 24px;text-align:center;margin-bottom:24px;cursor:pointer"
+             onclick="openUploadModal('Drawing')"
+             ondragover="event.preventDefault();this.classList.add('active')"
+             ondragleave="this.classList.remove('active')"
+             ondrop="handleMainDrop(event)">
+          <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,rgba(30,108,147,.1),rgba(73,170,212,.08));display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+            <span class="mat" style="font-size:32px;color:#1E6C93">cloud_upload</span>
+          </div>
+          <p style="font-size:18px;font-weight:700;color:#1b1c1c;margin:0 0 6px">Drop files here or click to upload</p>
+          <p style="font-size:14px;color:#70787f;margin:0 0 16px">PDF, DWG, XLSX, DOCX, JPG, PNG — up to 100 MB</p>
+          <button onclick="event.stopPropagation();openUploadModal('Drawing')"
+            style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#1E6C93,#49AAD4);color:#fff;border:none;border-radius:10px;padding:11px 22px;font-size:15px;font-weight:700;cursor:pointer;transition:all .25s;box-shadow:0 4px 12px rgba(30,108,147,.3)">
+            <span class="mat" style="font-size:16px">add</span> Choose Files
+          </button>
+        </div>
+
+        <!-- Sub-Tabs: Drawing | Output -->
+        <div style="border-bottom:2px solid #e5e2e1;display:flex;margin-bottom:20px">
+          <button class="sub-tab-btn active" id="stab-drawing" onclick="switchSubTab('drawing')">
+            <span class="mat" style="font-size:16px">architecture</span> Drawing
+            <span style="background:#1E6C93;color:#fff;border-radius:12px;padding:2px 8px;font-size:12px;margin-left:4px">{{ drawing_files|length }}</span>
+          </button>
+          <button class="sub-tab-btn" id="stab-output" onclick="switchSubTab('output')">
+            <span class="mat" style="font-size:16px">assignment_turned_in</span> Output
+            <span style="background:#e5e2e1;color:#40484e;border-radius:12px;padding:2px 8px;font-size:12px;margin-left:4px">{{ output_files|length }}</span>
+          </button>
+        </div>
+
+        <!-- Drawing files -->
+        <div id="subtab-drawing">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <div>
+              <p style="font-size:16px;font-weight:700;margin:0;color:#1b1c1c">Drawing Files</p>
+              <p style="font-size:13px;color:#70787f;margin:4px 0 0">Architectural and structural documents</p>
+            </div>
+            <button onclick="openUploadModal('Drawing')"
+              style="display:flex;align-items:center;gap:6px;background:#1E6C93;color:#fff;border:none;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s">
+              <span class="mat" style="font-size:16px">cloud_upload</span> Upload
+            </button>
+          </div>
+          {% if drawing_files %}
+            <div class="file-grid" id="drawing-grid">
+              {% for f in drawing_files %}{% include '_file_card.html' %}{% endfor %}
+            </div>
+          {% else %}
+            <div style="text-align:center;padding:56px 24px;border:2px dashed #e5e2e1;border-radius:16px" id="drawing-empty">
+              <span class="mat" style="font-size:48px;color:#c0c7cf;display:block;margin-bottom:12px">folder_open</span>
+              <p style="font-size:16px;font-weight:600;color:#40484e;margin:0 0 6px">No drawing files yet</p>
+              <button onclick="openUploadModal('Drawing')" style="background:none;border:none;color:#1E6C93;cursor:pointer;font-size:15px;font-weight:700;margin-top:8px">Upload your first drawing →</button>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Output files -->
+        <div id="subtab-output" style="display:none">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <div>
+              <p style="font-size:16px;font-weight:700;margin:0;color:#1b1c1c">Output Files</p>
+              <p style="font-size:13px;color:#70787f;margin:4px 0 0">Reports, approvals, and deliverables</p>
+            </div>
+            <button onclick="openUploadModal('Output')"
+              style="display:flex;align-items:center;gap:6px;background:#1E6C93;color:#fff;border:none;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer">
+              <span class="mat" style="font-size:16px">cloud_upload</span> Upload
+            </button>
+          </div>
+          {% if output_files %}
+            <div class="file-grid" id="output-grid">
+              {% for f in output_files %}{% include '_file_card.html' %}{% endfor %}
+            </div>
+          {% else %}
+            <div style="text-align:center;padding:56px 24px;border:2px dashed #e5e2e1;border-radius:16px">
+              <span class="mat" style="font-size:48px;color:#c0c7cf;display:block;margin-bottom:12px">assignment_turned_in</span>
+              <p style="font-size:16px;font-weight:600;color:#40484e;margin:0">No output files yet</p>
+              <button onclick="openUploadModal('Output')" style="background:none;border:none;color:#1E6C93;cursor:pointer;font-size:15px;font-weight:700;margin-top:8px">Upload output files →</button>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Activity Feed -->
+        <div style="margin-top:36px">
+          <p style="font-size:12px;font-weight:700;color:#70787f;text-transform:uppercase;letter-spacing:.1em;margin:0 0 16px">Recent Activity</p>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            {% if activities %}
+              {% for a in activities %}
+              <div class="card anim-up" style="padding:14px 16px;display:flex;align-items:flex-start;gap:12px;animation-delay:{{ loop.index0 * 50 }}ms">
+                <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,rgba(30,108,147,.12),rgba(73,170,212,.08));display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                  <span class="mat" style="font-size:16px;color:#1E6C93">
+                    {% if 'Upload' in a.action %}cloud_upload
+                    {% elif 'Delete' in a.action %}delete
+                    {% elif 'Created' in a.action %}add_circle
+                    {% elif 'BOQ' in a.action %}summarize
+                    {% elif 'Chat' in a.action %}smart_toy
+                    {% else %}update{% endif %}
+                  </span>
+                </div>
+                <div style="flex:1;min-width:0">
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+                    <span style="font-size:15px;font-weight:600;color:#1b1c1c">{{ a.action }}</span>
+                    <span style="font-size:12px;color:#70787f;flex-shrink:0">{{ a.time_ago }}</span>
+                  </div>
+                  {% if a.details %}<p style="font-size:13px;color:#40484e;margin:4px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.details }}</p>{% endif %}
+                </div>
+              </div>
+              {% endfor %}
+            {% else %}
+              <div style="text-align:center;padding:32px;color:#70787f;font-size:15px">
+                <span class="mat" style="font-size:40px;display:block;margin-bottom:8px;opacity:.4">history</span>
+                No activity yet. Upload files to get started.
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Panel -->
+      <div style="display:flex;flex-direction:column;gap:18px">
+        <!-- Notes -->
+        <div class="card anim-up" style="padding:20px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="mat" style="color:#1E6C93;font-size:20px">edit_note</span>
+              <span style="font-size:16px;font-weight:700;color:#1b1c1c">Notes</span>
+            </div>
+            <span style="font-size:11px;background:#f0eded;color:#70787f;padding:3px 8px;border-radius:6px;font-weight:700;text-transform:uppercase;letter-spacing:.05em">Private</span>
+          </div>
+          <textarea id="note-area" rows="4" placeholder="Add project notes, reminders, instructions…"
+            style="width:100%;background:#f6f3f2;border:1px solid #e5e2e1;border-radius:10px;padding:12px;font-size:15px;color:#1b1c1c;resize:none;outline:none;transition:border .2s;font-family:inherit"
+            onfocus="this.style.borderColor='#49AAD4'" onblur="this.style.borderColor='#e5e2e1'">{{ note.note if note and note.note else '' }}</textarea>
+          <button onclick="saveNotes()" id="note-btn"
+            style="margin-top:10px;width:100%;background:linear-gradient(135deg,#1E6C93,#005375);color:#fff;border:none;border-radius:10px;padding:12px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s">
+            <span class="mat" id="note-sp" style="font-size:16px;display:none" class="spin-anim">progress_activity</span>
+            <span id="note-bt">Save Notes</span>
+          </button>
+          <p id="note-status" style="text-align:center;font-size:13px;color:#70787f;margin-top:8px;display:none"></p>
+        </div>
+
+        <!-- Capacity -->
+        <div class="card anim-up" style="padding:20px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <span style="font-size:15px;font-weight:700;color:#1b1c1c">Storage Capacity</span>
+            <span style="font-size:15px;font-weight:700;color:#1E6C93">{{ capacity_pct }}%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:{{ capacity_pct }}%"></div>
+          </div>
+          <p style="font-size:13px;color:#70787f;text-align:center;margin-top:8px">{{ storage_used }} of 1 GB used</p>
+        </div>
+
+        <!-- Files Quick View -->
+        <div class="card anim-up" style="padding:20px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <span style="font-size:17px;font-weight:700;color:#212121;font-family:'Merriweather',serif">Files</span>
+            <button onclick="openUploadModal('Drawing')"
+              style="width:32px;height:32px;border-radius:50%;background:#1E6C93;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s"
+              onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+              <span class="mat" style="font-size:16px">add</span>
+            </button>
+          </div>
+          {% set all_files = drawing_files + output_files %}
+          <div style="display:flex;flex-direction:column;gap:10px">
+            {% if all_files %}
+              {% for f in all_files[:5] %}
+              <div onclick="openViewer({{ f.id }}, '{{ f.original_name|replace("'","\\'")|e }}', '{{ f.file_type or "" }}')"
+                   style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;border:1px solid #e5e2e1;background:#fff;cursor:pointer;transition:all .2s"
+                   onmouseover="this.style.borderColor='#49AAD4';this.style.background='#f6f3f2'" onmouseout="this.style.borderColor='#e5e2e1';this.style.background='#fff'">
+                <div class="fi-icon {{ f.icon_bg }}" style="width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                  <span class="mat {{ f.icon_text }}" style="font-size:20px">{{ f.icon }}</span>
+                </div>
+                <div style="flex:1;min-width:0">
+                  <p style="font-size:14px;font-weight:600;color:#1b1c1c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0">{{ f.original_name }}</p>
+                  <div style="display:flex;align-items:center;gap:8px;margin-top:3px">
+                    <span style="font-size:11px;font-weight:700;background:#f0eded;color:#40484e;padding:2px 6px;border-radius:4px;text-transform:uppercase">{{ f.file_type or '—' }}</span>
+                    <span style="font-size:12px;color:#70787f">{{ f.size_display }}</span>
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px">
+                  <a href="{{ url_for('download_file', project_id=project.id, file_id=f.id) }}" onclick="event.stopPropagation()"
+                     style="padding:5px;color:#70787f;border-radius:6px;display:flex;align-items:center;transition:color .2s" title="Download"
+                     onmouseover="this.style.color='#1E6C93'" onmouseout="this.style.color='#70787f'">
+                    <span class="mat" style="font-size:15px">download</span>
+                  </a>
+                </div>
+              </div>
+              {% endfor %}
+              {% if all_files|length > 5 %}
+              <a href="{{ url_for('project_files', project_id=project.id) }}"
+                 style="display:block;text-align:center;font-size:14px;color:#1E6C93;font-weight:700;text-decoration:none;padding:8px;border-radius:10px;transition:background .2s"
+                 onmouseover="this.style.background='#f6f3f2'" onmouseout="this.style.background='none'">
+                View all {{ all_files|length }} files →
+              </a>
+              {% endif %}
+            {% else %}
+              <div style="text-align:center;padding:24px">
+                <span class="mat" style="font-size:36px;color:#c0c7cf;display:block;margin-bottom:8px">folder_open</span>
+                <p style="font-size:14px;color:#70787f;margin:0">No files uploaded</p>
+                <button onclick="openUploadModal('Drawing')" style="background:none;border:none;color:#1E6C93;cursor:pointer;font-size:14px;font-weight:600;margin-top:8px">Upload first file</button>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Members -->
+        {% if members %}
+        <div class="card anim-up" style="padding:20px">
+          <p style="font-size:16px;font-weight:700;color:#1b1c1c;margin:0 0 14px">Team Members</p>
+          {% for m in members %}
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <div style="width:34px;height:34px;border-radius:50%;background:#1E6C93;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0">
+              {{ m.name[:2].upper() }}
+            </div>
+            <div>
+              <p style="font-size:14px;font-weight:600;margin:0">{{ m.name }}</p>
+              <p style="font-size:12px;color:#70787f;margin:2px 0 0">{{ m.member_role }}</p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div><!-- /tab-blueprints -->
+
+  <!-- ════════ AI CHAT TAB ════════ -->
+  <div id="tab-ai-chat" style="display:none">
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start">
+      <!-- Chat Area -->
+      <div style="display:flex;flex-direction:column;background:#fff;border:1px solid #e5e2e1;border-radius:20px;overflow:hidden;min-height:560px">
+        <!-- Chat header -->
+        <div style="padding:16px 20px;border-bottom:1px solid #e5e2e1;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,rgba(30,108,147,.06),rgba(73,170,212,.04))">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#1E6C93,#49AAD4);display:flex;align-items:center;justify-content:center">
+              <span class="mat" style="color:white;font-size:22px;font-variation-settings:'FILL' 1">smart_toy</span>
+            </div>
+            <div>
+              <p style="font-size:16px;font-weight:700;margin:0;color:#1b1c1c">VEKAS AI Assistant</p>
+              <p style="font-size:13px;color:#70787f;margin:2px 0 0">Claude claude-sonnet-4-6 · Project-aware</p>
+            </div>
+          </div>
+          {% if anthropic_available and anthropic_configured %}
+          <div style="display:flex;align-items:center;gap:6px;background:#f0fdf4;border:1px solid #86efac;padding:4px 10px;border-radius:12px">
+            <div style="width:8px;height:8px;border-radius:50%;background:#22c55e"></div>
+            <span style="font-size:12px;font-weight:700;color:#166534">Online</span>
+          </div>
+          {% else %}
+          <div class="ai-status-muted">
+            <div style="width:8px;height:8px;border-radius:50%;background:#f59e0b"></div>
+            <span style="font-size:12px;font-weight:700;color:#92400e">Setup required</span>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Messages -->
+        <div id="chat-messages" style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:4px">
+          <!-- Welcome message -->
+          <div class="chat-msg" style="margin-bottom:20px">
+            <div class="chat-avatar" style="background:linear-gradient(135deg,#1E6C93,#49AAD4);color:#fff">AI</div>
+            <div class="chat-bubble ai">
+              <p style="margin:0 0 8px;font-weight:700">Hello! I'm your VEKAS AI assistant. 👷</p>
+              <p style="margin:0;font-size:14px;color:#40484e">I have full context of your project <strong>{{ project.name }}</strong> and all uploaded documents. I can help you with:</p>
+              <ul style="margin:8px 0 0;padding-left:18px;font-size:14px;color:#40484e">
+                <li>📋 Bill of Quantities (BOQ) generation</li>
+                <li>📐 Document analysis &amp; review</li>
+                <li>💰 Cost estimation &amp; budget planning</li>
+                <li>🗓 Project scheduling guidance</li>
+                <li>🔍 Specification review</li>
+              </ul>
+              <p style="margin:10px 0 0;font-size:13px;color:#70787f">Use the <strong>Generate BOQ Report</strong> button on the right for a full Bill of Quantities.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Typing indicator (hidden) -->
+        <div id="typing-indicator" style="display:none;padding:0 20px 12px;align-items:center;gap:10px">
+          <div class="chat-avatar" style="background:linear-gradient(135deg,#1E6C93,#49AAD4);color:#fff">AI</div>
+          <div class="chat-bubble ai" style="display:flex;align-items:center;gap:6px;padding:12px 16px">
+            <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+          </div>
+        </div>
+
+        <!-- Input area -->
+        <div style="border-top:1px solid #e5e2e1;padding:16px 20px;background:#f9f9f9">
+          <!-- API key warning if not set -->
+          <div id="api-warning" style="display:{{ 'none' if anthropic_available and anthropic_configured else 'block' }};background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#92400e">
+            {% if not anthropic_available %}
+            <strong>AI setup required:</strong> Install project dependencies in the active Flask environment, including <code>anthropic</code>.
+            {% elif not anthropic_configured %}
+            <strong>API key missing:</strong> Add your Anthropic API key to <code>config.py</code> or set <code>ANTHROPIC_API_KEY</code>.
+            {% endif %}
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-end">
+            <textarea id="chat-input" rows="2" placeholder="Ask about your project documents, request analysis, or generate a BOQ…"
+              style="flex:1;background:#fff;border:1px solid #e5e2e1;border-radius:14px;padding:12px 16px;font-size:15px;color:#1b1c1c;resize:none;outline:none;font-family:inherit;transition:border .2s;max-height:120px"
+              onfocus="this.style.borderColor='#49AAD4'" onblur="this.style.borderColor='#e5e2e1'"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}" {% if not anthropic_available or not anthropic_configured %}disabled{% endif %}></textarea>
+            <button onclick="sendChat()" id="send-btn"
+              class="{% if not anthropic_available or not anthropic_configured %}ai-disabled{% endif %}"
+              {% if not anthropic_available or not anthropic_configured %}disabled{% endif %}
+              style="background:linear-gradient(135deg,#1E6C93,#49AAD4);color:#fff;border:none;border-radius:14px;padding:12px 18px;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:15px;font-weight:700;transition:all .2s;box-shadow:0 4px 12px rgba(30,108,147,.3);flex-shrink:0">
+              <span class="mat" id="send-icon" style="font-size:18px">send</span>
+            </button>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:13px;color:#70787f">Model:</span>
+              <span style="font-size:13px;font-weight:600;color:#1E6C93;background:#f0eded;padding:3px 10px;border-radius:8px">claude-sonnet-4-6</span>
+            </div>
+            <span style="font-size:12px;color:#c0c7cf">Shift+Enter for new line</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Files context + BOQ -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <!-- Generate BOQ -->
+        <div style="background:linear-gradient(135deg,#1E6C93,#005375);border-radius:18px;padding:24px;color:#fff">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+            <span class="mat" style="font-size:28px;font-variation-settings:'FILL' 1">summarize</span>
+            <div>
+              <p style="font-size:17px;font-weight:700;margin:0">Generate BOQ</p>
+              <p style="font-size:13px;opacity:.8;margin:3px 0 0">Bill of Quantities</p>
+            </div>
+          </div>
+          <p style="font-size:14px;opacity:.85;margin:0 0 16px;line-height:1.6">Analyzes all uploaded project documents and generates a comprehensive BOQ with cost estimates in INR.</p>
+          <button onclick="generateBOQ()" id="boq-btn"
+            class="{% if not anthropic_available or not anthropic_configured %}ai-disabled{% endif %}"
+            {% if not anthropic_available or not anthropic_configured %}disabled{% endif %}
+            style="width:100%;background:rgba(255,255,255,.2);color:#fff;border:2px solid rgba(255,255,255,.4);border-radius:12px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:8px;backdrop-filter:blur(4px)"
+            onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.2)'">
+            <span class="mat" id="boq-icon" style="font-size:18px">auto_awesome</span>
+            <span id="boq-text">{% if anthropic_available and anthropic_configured %}Generate BOQ Report{% else %}AI Setup Required{% endif %}</span>
+          </button>
+        </div>
+
+        <!-- Uploaded files (context) -->
+        <div class="card" style="padding:18px;flex:1;overflow-y:auto">
+          <p style="font-size:15px;font-weight:700;color:#1b1c1c;margin:0 0 14px;display:flex;align-items:center;gap:6px">
+            <span class="mat" style="font-size:18px;color:#1E6C93">attach_file</span>
+            Document Context
+          </p>
+          <p style="font-size:13px;color:#70787f;margin:0 0 12px">Files available to the AI:</p>
+          {% set all_files = drawing_files + output_files %}
+          {% if all_files %}
+            {% for f in all_files %}
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;border:1px solid #e5e2e1;margin-bottom:6px;background:#f9f9f9">
+              <span class="mat" style="font-size:16px;color:#1E6C93">{{ f.icon }}</span>
+              <div style="flex:1;min-width:0">
+                <p style="font-size:13px;font-weight:600;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ f.original_name }}</p>
+                <span style="font-size:11px;font-weight:700;color:#40484e;text-transform:uppercase">{{ f.file_type or '—' }} · {{ f.size_display }}</span>
+              </div>
+              <button onclick="openViewer({{ f.id }}, '{{ f.original_name|replace("'","\\'")|e }}', '{{ f.file_type or "" }}')"
+                style="background:none;border:none;cursor:pointer;padding:3px;color:#70787f;border-radius:6px;transition:color .2s"
+                onmouseover="this.style.color='#1E6C93'" onmouseout="this.style.color='#70787f'" title="View">
+                <span class="mat" style="font-size:14px">visibility</span>
+              </button>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div style="text-align:center;padding:24px;color:#70787f;font-size:14px">
+              <span class="mat" style="font-size:36px;display:block;margin-bottom:8px;opacity:.4">cloud_upload</span>
+              No files uploaded yet.<br>
+              <button onclick="switchMainTab('blueprints');openUploadModal('Drawing')" style="background:none;border:none;color:#1E6C93;cursor:pointer;font-size:14px;font-weight:600;margin-top:6px">Upload files first</button>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Quick prompts -->
+        <div class="card" style="padding:16px">
+          <p style="font-size:14px;font-weight:700;color:#1b1c1c;margin:0 0 10px">Quick Prompts</p>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            {% for prompt in [
+              'Summarize the key specifications from uploaded documents',
+              'What materials are required for this project?',
+              'Estimate the project timeline and milestones',
+              'Identify potential risks and mitigation strategies',
+              'What is the estimated total project cost?'
+            ] %}
+            <button onclick="usePrompt('{{ prompt }}')"
+              style="text-align:left;background:#f6f3f2;border:1px solid #e5e2e1;border-radius:10px;padding:9px 12px;font-size:13px;color:#1b1c1c;cursor:pointer;transition:all .2s;font-family:inherit"
+              onmouseover="this.style.borderColor='#49AAD4';this.style.background='#f0eded'" onmouseout="this.style.borderColor='#e5e2e1';this.style.background='#f6f3f2'">
+              {{ prompt }}
+            </button>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /tab-ai-chat -->
+
+</main><!-- /page-content -->
+</div><!-- /main-wrap -->
+</div><!-- /layout -->
+
+<!-- ═══════════════ FILE VIEWER MODAL ═══════════════ -->
+<div class="overlay" id="viewer-overlay" onclick="closeViewer(event)">
+  <div class="modal-box" style="max-width:960px">
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #e5e2e1;flex-shrink:0;background:#f6f3f2;border-radius:20px 20px 0 0">
+      <div style="display:flex;align-items:center;gap:12px;min-width:0">
+        <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#1E6C93,#49AAD4);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <span class="mat" id="viewer-icon" style="color:white;font-size:20px">insert_drive_file</span>
+        </div>
+        <div style="min-width:0">
+          <p id="viewer-filename" style="font-size:16px;font-weight:700;color:#1b1c1c;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:500px">filename.pdf</p>
+          <p id="viewer-meta" style="font-size:12px;color:#70787f;margin:2px 0 0"></p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+        <a id="viewer-download-btn" href="#" download
+          style="display:flex;align-items:center;gap:6px;background:#1E6C93;color:#fff;text-decoration:none;border-radius:10px;padding:9px 16px;font-size:14px;font-weight:700;transition:all .2s">
+          <span class="mat" style="font-size:16px">download</span> Download
+        </a>
+        <button onclick="closeViewer()"
+          style="background:#f0eded;border:none;border-radius:10px;padding:9px;cursor:pointer;color:#40484e;display:flex;align-items:center;transition:all .2s"
+          onmouseover="this.style.background='#e5e2e1'" onmouseout="this.style.background='#f0eded'">
+          <span class="mat" style="font-size:18px">close</span>
+        </button>
+      </div>
+    </div>
+    <!-- Content -->
+    <div id="viewer-content" style="flex:1;overflow:auto;background:#f0eded;display:flex;align-items:center;justify-content:center;min-height:400px;border-radius:0 0 20px 20px">
+      <div id="viewer-loader" style="display:flex;flex-direction:column;align-items:center;gap:12px;color:#70787f">
+        <span class="mat spin-anim" style="font-size:48px;color:#1E6C93">progress_activity</span>
+        <p style="margin:0;font-size:15px">Loading file…</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ UPLOAD MODAL ═══════════════ -->
+<div class="overlay" id="upload-overlay" onclick="closeUploadModal(event)">
+  <div class="modal-box" style="max-width:580px">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid #e5e2e1;background:#f6f3f2;border-radius:20px 20px 0 0">
+      <div>
+        <p style="font-size:18px;font-weight:700;color:#1E6C93;margin:0;font-family:'Merriweather',serif">Upload Files</p>
+        <p style="font-size:13px;color:#70787f;margin:4px 0 0">Folder: <strong id="upload-folder-label">Drawing</strong></p>
+      </div>
+      <button onclick="closeUploadModal()" style="background:#f0eded;border:none;border-radius:10px;padding:8px;cursor:pointer;display:flex;align-items:center">
+        <span class="mat">close</span>
+      </button>
+    </div>
+    <div style="padding:22px">
+      <!-- Folder toggle -->
+      <div style="display:flex;gap:8px;margin-bottom:18px">
+        <button onclick="setFolder('Drawing')" id="fbtn-drawing"
+          style="flex:1;padding:10px;border-radius:10px;border:2px solid #1E6C93;background:#1E6C93;color:#fff;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s">Drawing</button>
+        <button onclick="setFolder('Output')" id="fbtn-output"
+          style="flex:1;padding:10px;border-radius:10px;border:2px solid #e5e2e1;background:#fff;color:#40484e;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s">Output</button>
+      </div>
+      <!-- Drop -->
+      <div id="upload-drop" class="drop-zone"
+           style="padding:40px 24px;text-align:center;cursor:pointer;margin-bottom:16px"
+           onclick="document.getElementById('file-input').click()"
+           ondragover="event.preventDefault();this.classList.add('active')" ondragleave="this.classList.remove('active')"
+           ondrop="handleUploadDrop(event)">
+        <span class="mat" style="font-size:48px;color:#c0c7cf;display:block;margin-bottom:12px">upload_file</span>
+        <p style="font-size:16px;font-weight:600;color:#1b1c1c;margin:0 0 6px">Click or drag files here</p>
+        <p style="font-size:13px;color:#70787f;margin:0">PDF, DWG, DOCX, XLSX, PNG, JPG — max 100 MB each</p>
+      </div>
+      <input type="file" id="file-input" multiple style="display:none" onchange="handleFileSelect(this.files)"/>
+      <div id="sel-files" style="display:flex;flex-direction:column;gap:6px;max-height:160px;overflow-y:auto;margin-bottom:12px"></div>
+      <!-- Progress -->
+      <div id="up-prog-wrap" style="display:none;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:#70787f;margin-bottom:4px">
+          <span id="up-prog-label">Uploading…</span><span id="up-prog-pct">0%</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="up-prog-bar" style="width:0%"></div></div>
+      </div>
+      <div id="up-err" style="display:none;background:#fef2f2;border:1px solid #fca5a5;color:#991b1b;padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+        <span class="mat" style="font-size:16px">error</span><span id="up-err-text"></span>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button onclick="closeUploadModal()" style="flex:1;padding:13px;border:1px solid #e5e2e1;border-radius:12px;background:#fff;font-size:15px;font-weight:600;color:#40484e;cursor:pointer;transition:all .2s">Cancel</button>
+        <button onclick="submitUpload()" id="up-btn"
+          style="flex:1;padding:13px;background:linear-gradient(135deg,#1E6C93,#49AAD4);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;box-shadow:0 4px 12px rgba(30,108,147,.3)">
+          <span class="mat" id="up-sp" style="display:none" class="spin-anim">progress_activity</span>
+          Upload Files
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ BOQ MODAL ═══════════════ -->
+<div class="overlay" id="boq-overlay" onclick="closeBOQ(event)">
+  <div class="modal-box" style="max-width:1100px">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid #e5e2e1;background:linear-gradient(135deg,#1E6C93,#005375);border-radius:20px 20px 0 0">
+      <div>
+        <p style="font-size:20px;font-weight:700;color:#fff;margin:0;font-family:'Merriweather',serif">Bill of Quantities</p>
+        <p id="boq-project-label" style="font-size:13px;color:rgba(255,255,255,.8);margin:4px 0 0">{{ project.name }}</p>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="printBOQ()" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:10px;padding:8px 14px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s">
+          <span class="mat" style="font-size:16px">print</span> Print
+        </button>
+        <button onclick="closeBOQ()" style="background:rgba(255,255,255,.15);border:none;border-radius:10px;padding:8px;cursor:pointer;color:#fff;display:flex;align-items:center">
+          <span class="mat" style="font-size:18px">close</span>
+        </button>
+      </div>
+    </div>
+    <div id="boq-content" style="flex:1;overflow:auto;padding:24px;border-radius:0 0 20px 20px">
+      <!-- filled by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ EDIT STATUS MODAL ═══════════════ -->
+<div class="overlay" id="status-overlay" onclick="closeStatusModal(event)">
+  <div class="modal-box" style="max-width:420px">
+    <div style="padding:18px 22px;border-bottom:1px solid #e5e2e1;display:flex;justify-content:space-between;align-items:center">
+      <p style="font-size:18px;font-weight:700;color:#1E6C93;margin:0;font-family:'Merriweather',serif">Update Project</p>
+      <button onclick="closeStatusModal()" style="background:none;border:none;cursor:pointer;color:#40484e"><span class="mat">close</span></button>
+    </div>
+    <div style="padding:22px;display:flex;flex-direction:column;gap:14px">
+      <div>
+        <label style="font-size:13px;font-weight:700;color:#1b1c1c;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">Status</label>
+        <select id="st-status" style="width:100%;padding:12px 14px;border:1px solid #e5e2e1;border-radius:10px;font-size:15px;outline:none;background:#fff;font-family:inherit">
+          {% for s in ['Planning','In Progress','Review','Completed','Delayed'] %}
+          <option {% if s==project.status %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select>
+      </div>
+      <div>
+        <label style="font-size:13px;font-weight:700;color:#1b1c1c;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">Priority</label>
+        <select id="st-priority" style="width:100%;padding:12px 14px;border:1px solid #e5e2e1;border-radius:10px;font-size:15px;outline:none;background:#fff;font-family:inherit">
+          {% for p in ['Low','Medium','High'] %}
+          <option {% if p==project.priority %}selected{% endif %}>{{ p }}</option>{% endfor %}
+        </select>
+      </div>
+      <div style="display:flex;gap:10px;padding-top:6px">
+        <button onclick="closeStatusModal()" style="flex:1;padding:12px;border:1px solid #e5e2e1;border-radius:12px;background:#fff;font-size:15px;font-weight:600;cursor:pointer">Cancel</button>
+        <button onclick="saveStatus()" style="flex:1;padding:12px;background:linear-gradient(135deg,#1E6C93,#49AAD4);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ SCRIPTS ═══════════════ -->
+<script>
+const PID = {{ project.id }};
+const AI_AVAILABLE = {{ 'true' if anthropic_available else 'false' }};
+const AI_CONFIGURED = {{ 'true' if anthropic_configured else 'false' }};
+let chatHistory = [], isAILoading = false;
+let uploadFolder = 'Drawing', selFiles = [];
+
+// ── Mobile sidebar ──
+function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('sidebar-overlay').style.display='block'}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebar-overlay').style.display='none'}
+
+// ── Generic menu toggle ──
+function toggleMenu(id){
+  const el=document.getElementById(id);
+  const wasHidden=el.style.display==='none'||!el.style.display;
+  document.querySelectorAll('#user-menu,#proj-menu').forEach(m=>m.style.display='none');
+  el.style.display=wasHidden?'block':'none';
+}
+function closeMenu(id){document.getElementById(id).style.display='none'}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#user-menu-root')&&!e.target.closest('#proj-menu-btn'))
+    document.querySelectorAll('#user-menu,#proj-menu').forEach(m=>m.style.display='none');
+});
+
+// ── Main tab switch ──
+function switchMainTab(tab){
+  document.getElementById('tab-blueprints').style.display=tab==='blueprints'?'block':'none';
+  document.getElementById('tab-ai-chat').style.display=tab==='ai-chat'?'grid':'none';
+  document.getElementById('mtab-blueprints').classList.toggle('active',tab==='blueprints');
+  document.getElementById('mtab-ai-chat').classList.toggle('active',tab==='ai-chat');
+  if(tab==='ai-chat') document.getElementById('tab-ai-chat').style.display='grid';
+}
+
+// ── Sub tab switch ──
+function switchSubTab(t){
+  document.getElementById('subtab-drawing').style.display=t==='drawing'?'block':'none';
+  document.getElementById('subtab-output').style.display=t==='output'?'block':'none';
+  document.getElementById('stab-drawing').classList.toggle('active',t==='drawing');
+  document.getElementById('stab-output').classList.toggle('active',t==='output');
+}
+
+// ── Description toggle ──
+let descExpanded=false;
+function toggleDesc(){
+  const el=document.getElementById('proj-desc');
+  descExpanded=!descExpanded;
+  el.style.webkitLineClamp=descExpanded?'unset':'2';
+  el.style.overflow=descExpanded?'visible':'hidden';
+  document.getElementById('desc-more-text').textContent=descExpanded?'Show less':'Show more';
+  document.getElementById('desc-more-icon').textContent=descExpanded?'expand_less':'expand_more';
+}
+
+// ── File Viewer ──
+const VIEWER_ICONS={pdf:'picture_as_pdf',dwg:'architecture',dxf:'architecture',xlsx:'table_view',xls:'table_view',doc:'description',docx:'description',txt:'article',png:'image',jpg:'image',jpeg:'image',gif:'image',mp4:'videocam',zip:'folder_zip'};
+function openViewer(fid, fname, ftype){
+  const ol=document.getElementById('viewer-overlay');
+  const ct=document.getElementById('viewer-content');
+  document.getElementById('viewer-filename').textContent=fname;
+  document.getElementById('viewer-meta').textContent=(ftype||'').toUpperCase();
+  document.getElementById('viewer-icon').textContent=VIEWER_ICONS[ftype.toLowerCase()]||'insert_drive_file';
+  document.getElementById('viewer-download-btn').href=`/project/${PID}/download/${fid}`;
+  document.getElementById('viewer-download-btn').download=fname;
+
+  ct.innerHTML='<div id="viewer-loader" style="display:flex;flex-direction:column;align-items:center;gap:12px;color:#70787f"><span class="mat spin-anim" style="font-size:48px;color:#1E6C93">progress_activity</span><p style="margin:0;font-size:15px">Loading…</p></div>';
+  ol.classList.add('show');
+  document.body.style.overflow='hidden';
+
+  const ft=(ftype||'').toLowerCase();
+  if(['jpg','jpeg','png','gif','webp'].includes(ft)){
+    const img=new Image();
+    img.onload=()=>{ct.innerHTML='';ct.style.padding='20px';ct.style.background='#1a1a1a';img.style.cssText='max-width:100%;max-height:80vh;object-fit:contain;border-radius:8px';ct.appendChild(img)};
+    img.onerror=()=>{ct.innerHTML=noPreviewHtml(fname,fid)};
+    img.src=`/project/${PID}/view/${fid}`;
+  } else if(ft==='pdf'){
+    ct.style.padding='0';
+    ct.innerHTML=`<iframe src="/project/${PID}/view/${fid}" style="width:100%;height:75vh;border:none;border-radius:0 0 20px 20px"></iframe>`;
+  } else if(['txt','md','csv','log'].includes(ft)){
+    fetch(`/project/${PID}/content/${fid}`)
+      .then(r=>r.json())
+      .then(d=>{
+        if(d.success){
+          ct.style.padding='0';
+          ct.innerHTML=`<div style="width:100%;height:75vh;overflow:auto;padding:24px;font-family:monospace;font-size:14px;line-height:1.7;white-space:pre-wrap;color:#1b1c1c;background:#f9f9f9;border-radius:0 0 20px 20px">${escHtml(d.content)}</div>`;
+        } else {ct.innerHTML=noPreviewHtml(fname,fid)}
+      }).catch(()=>ct.innerHTML=noPreviewHtml(fname,fid));
+  } else if(['doc','docx'].includes(ft)){
+    fetch(`/project/${PID}/content/${fid}`)
+      .then(r=>r.json())
+      .then(d=>{
+        if(d.success){
+          ct.style.padding='0';
+          ct.innerHTML=`<div style="width:100%;height:75vh;overflow:auto;padding:32px;font-size:15px;line-height:1.8;color:#1b1c1c;background:#fff;border-radius:0 0 20px 20px">${escHtml(d.content).replace(/\n/g,'<br>')}</div>`;
+        } else ct.innerHTML=noPreviewHtml(fname,fid);
+      }).catch(()=>ct.innerHTML=noPreviewHtml(fname,fid));
+  } else {ct.innerHTML=noPreviewHtml(fname,fid)}
+}
+function noPreviewHtml(fname,fid){
+  return `<div style="text-align:center;padding:48px 24px;color:#40484e">
+    <span class="mat" style="font-size:64px;display:block;margin-bottom:16px;color:#c0c7cf">insert_drive_file</span>
+    <p style="font-size:18px;font-weight:700;margin:0 0 8px">Preview not available</p>
+    <p style="font-size:14px;color:#70787f;margin:0 0 20px">This file type cannot be previewed in the browser.</p>
+    <a href="/project/${PID}/download/${fid}" style="display:inline-flex;align-items:center;gap:8px;background:#1E6C93;color:#fff;text-decoration:none;border-radius:12px;padding:12px 24px;font-size:15px;font-weight:700">
+      <span class="mat">download</span> Download to View
+    </a>
+  </div>`;
+}
+function escHtml(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML}
+function closeViewer(e){
+  if(e&&e.target!==document.getElementById('viewer-overlay')&&!e.target.closest&&e.type==='click')return;
+  if(e&&e.currentTarget===document.getElementById('viewer-overlay')&&e.target!==e.currentTarget)return;
+  document.getElementById('viewer-overlay').classList.remove('show');
+  document.body.style.overflow='';
+  setTimeout(()=>{
+    const ct=document.getElementById('viewer-content');
+    ct.innerHTML='';ct.style.padding='';ct.style.background='';
+  },300);
+}
+
+// ── Upload modal ──
+function openUploadModal(folder){
+  uploadFolder=folder||'Drawing'; setFolder(folder);
+  selFiles=[]; renderSelFiles();
+  document.getElementById('up-err').style.display='none';
+  document.getElementById('up-prog-wrap').style.display='none';
+  document.getElementById('upload-overlay').classList.add('show');
+  document.body.style.overflow='hidden';
+}
+function closeUploadModal(e){
+  if(e&&e.target!==document.getElementById('upload-overlay'))return;
+  document.getElementById('upload-overlay').classList.remove('show');
+  document.body.style.overflow='';
+  document.getElementById('file-input').value='';
+  selFiles=[]; renderSelFiles();
+}
+function setFolder(f){
+  uploadFolder=f;
+  document.getElementById('upload-folder-label').textContent=f;
+  document.getElementById('fbtn-drawing').style.cssText=`flex:1;padding:10px;border-radius:10px;border:2px solid ${f==='Drawing'?'#1E6C93':'#e5e2e1'};background:${f==='Drawing'?'#1E6C93':'#fff'};color:${f==='Drawing'?'#fff':'#40484e'};font-size:14px;font-weight:${f==='Drawing'?'700':'600'};cursor:pointer;transition:all .2s`;
+  document.getElementById('fbtn-output').style.cssText=`flex:1;padding:10px;border-radius:10px;border:2px solid ${f==='Output'?'#1E6C93':'#e5e2e1'};background:${f==='Output'?'#1E6C93':'#fff'};color:${f==='Output'?'#fff':'#40484e'};font-size:14px;font-weight:${f==='Output'?'700':'600'};cursor:pointer;transition:all .2s`;
+}
+function handleFileSelect(files){selFiles=Array.from(files);renderSelFiles()}
+function handleUploadDrop(e){e.preventDefault();document.getElementById('upload-drop').classList.remove('active');selFiles=Array.from(e.dataTransfer.files);renderSelFiles()}
+function handleMainDrop(e){e.preventDefault();document.getElementById('main-drop').classList.remove('active');selFiles=Array.from(e.dataTransfer.files);openUploadModal('Drawing');setTimeout(renderSelFiles,100)}
+function renderSelFiles(){
+  const c=document.getElementById('sel-files');c.innerHTML='';
+  selFiles.forEach((f,i)=>{
+    const sz=f.size<1048576?(f.size/1024).toFixed(1)+' KB':(f.size/1048576).toFixed(1)+' MB';
+    const d=document.createElement('div');
+    d.style.cssText='display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;border:1px solid #e5e2e1;background:#f9f9f9';
+    d.innerHTML=`<span class="mat" style="color:#1E6C93;font-size:18px">insert_drive_file</span><div style="flex:1;min-width:0"><p style="font-size:14px;font-weight:600;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.name}</p><p style="font-size:12px;color:#70787f;margin:2px 0 0">${sz}</p></div><button onclick="removeFile(${i})" style="background:none;border:none;cursor:pointer;color:#70787f;padding:2px"><span class="mat" style="font-size:15px">close</span></button>`;
+    c.appendChild(d);
+  });
+}
+function removeFile(i){selFiles.splice(i,1);renderSelFiles()}
+async function submitUpload(){
+  if(!selFiles.length){showUpErr('Select at least one file.');return}
+  const btn=document.getElementById('up-btn'),sp=document.getElementById('up-sp'),pw=document.getElementById('up-prog-wrap'),pb=document.getElementById('up-prog-bar'),pp=document.getElementById('up-prog-pct');
+  btn.disabled=true;sp.style.display='inline';document.getElementById('up-err').style.display='none';pw.style.display='block';
+  const fd=new FormData();fd.append('folder_type',uploadFolder);selFiles.forEach(f=>fd.append('files',f));
+  await new Promise((res,rej)=>{
+    const xhr=new XMLHttpRequest();
+    xhr.upload.onprogress=e=>{if(e.lengthComputable){const p=Math.round(e.loaded/e.total*100);pb.style.width=p+'%';pp.textContent=p+'%'}};
+    xhr.onload=()=>{const d=JSON.parse(xhr.responseText);if(d.success){document.getElementById('up-prog-label').textContent=`✓ Uploaded ${d.uploaded.length} file(s)`;pb.style.width='100%';pp.textContent='100%';setTimeout(()=>{closeUploadModal({target:document.getElementById('upload-overlay')});location.reload()},700);res()}else rej(new Error(d.error))};
+    xhr.onerror=()=>rej(new Error('Network error'));
+    xhr.open('POST',`/project/${PID}/upload`);xhr.send(fd);
+  }).catch(err=>{showUpErr(err.message);btn.disabled=false;sp.style.display='none';pw.style.display='none'});
+}
+function showUpErr(msg){const e=document.getElementById('up-err');document.getElementById('up-err-text').textContent=msg;e.style.display='flex'}
+
+// ── Delete file ──
+function deleteFile(fid){
+  if(!confirm('Delete this file? Cannot be undone.'))return;
+  fetch(`/project/${PID}/file/${fid}/delete`,{method:'POST'}).then(r=>r.json()).then(d=>{if(d.success)location.reload();else alert(d.error)});
+}
+
+// ── Notes ──
+async function saveNotes(){
+  const note=document.getElementById('note-area').value,sp=document.getElementById('note-sp'),bt=document.getElementById('note-bt'),st=document.getElementById('note-status');
+  sp.style.display='inline';bt.textContent='Saving…';
+  const r=await fetch(`/project/${PID}/notes`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({note})});
+  const d=await r.json();
+  sp.style.display='none';bt.textContent='Save Notes';
+  st.textContent=d.success?'✓ Saved successfully':'Error: '+d.error;st.style.display='block';st.style.color=d.success?'#166534':'#991b1b';
+  setTimeout(()=>st.style.display='none',3000);
+}
+
+// ── Status modal ──
+function openStatusModal(){document.getElementById('status-overlay').classList.add('show')}
+function closeStatusModal(e){if(e&&e.target!==document.getElementById('status-overlay'))return;document.getElementById('status-overlay').classList.remove('show')}
+async function saveStatus(){
+  const r=await fetch(`/project/${PID}/update`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:document.getElementById('st-status').value,priority:document.getElementById('st-priority').value})});
+  if((await r.json()).success)location.reload();
+}
+
+// ── Delete project ──
+function confirmDelete(){
+  if(!confirm('Delete entire project and all files? This CANNOT be undone.'))return;
+  fetch(`/project/${PID}/delete`,{method:'POST'}).then(r=>r.json()).then(d=>{if(d.success)location.href=d.redirect;else alert(d.error)});
+}
+
+// ── AI Chat ──
+function aiSetupMessage(){
+  return !AI_AVAILABLE
+    ? 'AI setup required: install the anthropic package in the active Flask environment, then restart the server.'
+    : 'AI setup required: add your Anthropic API key to config.py or set ANTHROPIC_API_KEY, then restart the server.';
+}
+function showAISetupNotice(){
+  document.getElementById('api-warning').style.display='block';
+  appendMsg('ai', aiSetupMessage());
+}
+function usePrompt(p){
+  switchMainTab('ai-chat');
+  if(!AI_AVAILABLE || !AI_CONFIGURED){showAISetupNotice();return}
+  document.getElementById('chat-input').value=p;
+  document.getElementById('chat-input').focus();
+}
+function appendMsg(role,content){
+  const feed=document.getElementById('chat-messages');
+  const isUser=role==='user';
+  const div=document.createElement('div');
+  div.className='chat-msg'+(isUser?' user':'');
+  div.innerHTML=`<div class="chat-avatar" style="background:${isUser?'linear-gradient(135deg,#1E6C93,#49AAD4)':'#f0eded'};color:${isUser?'#fff':'#40484e'}">${isUser?'{{ current_user.name[:2].upper() }}':'AI'}</div>
+  <div class="chat-bubble ${isUser?'user':'ai'}">${escHtml(content).replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div>`;
+  feed.appendChild(div);
+  feed.scrollTop=feed.scrollHeight;
+}
+async function sendChat(){
+  if(isAILoading)return;
+  if(!AI_AVAILABLE || !AI_CONFIGURED){showAISetupNotice();return}
+  const inp=document.getElementById('chat-input');
+  const msg=inp.value.trim();
+  if(!msg)return;
+  inp.value='';
+  appendMsg('user',msg);
+  chatHistory.push({role:'user',content:msg});
+  isAILoading=true;
+  document.getElementById('send-icon').textContent='progress_activity';
+  document.getElementById('send-icon').classList.add('spin-anim');
+  document.getElementById('typing-indicator').style.display='flex';
+  document.getElementById('chat-messages').scrollTop=9999;
+  try{
+    const r=await fetch(`/project/${PID}/chat`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,history:chatHistory.slice(-10)})});
+    const d=await r.json();
+    document.getElementById('typing-indicator').style.display='none';
+    if(d.success){appendMsg('ai',d.response);chatHistory.push({role:'assistant',content:d.response})}
+    else{appendMsg('ai','⚠ Error: '+d.error);if(d.error.includes('API key'))document.getElementById('api-warning').style.display='block'}
+  }catch(e){document.getElementById('typing-indicator').style.display='none';appendMsg('ai','⚠ Network error. Please try again.')}
+  isAILoading=false;
+  document.getElementById('send-icon').textContent='send';
+  document.getElementById('send-icon').classList.remove('spin-anim');
+}
+
+// ── BOQ generation ──
+async function generateBOQ(){
+  if(!AI_AVAILABLE || !AI_CONFIGURED){switchMainTab('ai-chat');showAISetupNotice();return}
+  const btn=document.getElementById('boq-btn'),ico=document.getElementById('boq-icon'),txt=document.getElementById('boq-text');
+  btn.disabled=true;ico.textContent='progress_activity';ico.classList.add('spin-anim');txt.textContent='Generating…';
+  const overlay=document.getElementById('boq-overlay'),content=document.getElementById('boq-content');
+  content.innerHTML='<div style="text-align:center;padding:48px;color:#70787f"><span class="mat spin-anim" style="font-size:56px;color:#1E6C93;display:block;margin-bottom:16px">progress_activity</span><p style="font-size:17px;font-weight:600;margin:0">Analyzing documents and generating BOQ…</p><p style="font-size:14px;margin:8px 0 0;opacity:.7">This may take 15–30 seconds</p></div>';
+  overlay.classList.add('show');
+  try{
+    const r=await fetch(`/project/${PID}/generate_boq`,{method:'POST',headers:{'Content-Type':'application/json'}});
+    const d=await r.json();
+    if(d.success){
+      const analyzed=d.docs_analyzed.length?`<div style="margin-bottom:16px;padding:12px 16px;background:#f0fdf4;border:1px solid #86efac;border-radius:10px;font-size:14px;color:#166534">✓ Analyzed: ${d.docs_analyzed.join(', ')}</div>`:'<div style="margin-bottom:16px;padding:12px 16px;background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;font-size:14px;color:#92400e">⚠ No readable documents found — generated template BOQ</div>';
+      content.innerHTML=analyzed+d.boq_html;
+      appendMsg('ai',`✅ BOQ Report generated successfully!\n\nDocuments analyzed: ${d.docs_analyzed.length}\nProject: ${d.project_name}\n\nClick the BOQ report window to view the full Bill of Quantities.`);
+      chatHistory.push({role:'assistant',content:'BOQ Report generated. View in the BOQ modal.'});
+    }else{
+      content.innerHTML=`<div style="text-align:center;padding:48px;color:#991b1b"><span class="mat" style="font-size:56px;display:block;margin-bottom:16px">error</span><p style="font-size:17px;font-weight:600">Error generating BOQ</p><p>${d.error}</p>${d.error.includes('API key')?'<p style="font-size:14px;color:#40484e;margin-top:16px">Add your API key to <code>config.py</code> → ANTHROPIC_API_KEY</p>':''}</div>`;
+    }
+  }catch(e){content.innerHTML=`<div style="text-align:center;padding:48px;color:#991b1b"><span class="mat" style="font-size:56px;display:block;margin-bottom:16px">wifi_off</span><p>Network error. Please try again.</p></div>`}
+  btn.disabled=false;ico.textContent='auto_awesome';ico.classList.remove('spin-anim');txt.textContent='Generate BOQ Report';
+}
+function closeBOQ(e){if(e&&e.target!==document.getElementById('boq-overlay'))return;document.getElementById('boq-overlay').classList.remove('show')}
+function printBOQ(){const w=window.open('','_blank');w.document.write(`<html><head><title>BOQ - {{ project.name }}</title></head><body>${document.getElementById('boq-content').innerHTML}</body></html>`);w.document.close();w.print()}
+
+// ── Flash auto-hide ──
+setTimeout(()=>{document.querySelectorAll('.flash-msg').forEach(el=>{el.style.transition='all .4s';el.style.opacity='0';el.style.transform='translateX(100%)';setTimeout(()=>el.remove(),400)})},5000);
+</script>
+</body>
+</html>

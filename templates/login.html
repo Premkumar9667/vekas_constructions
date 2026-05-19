@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>VEKAS Construction | Sign In</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;0,900;1,400&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        "blueprint-blue":"#1E6C93","sky-accent":"#49AAD4","structure-dark":"#212121",
+        "foundation-white":"#FFFFFF","surface":"#fcf9f8","background":"#fcf9f8",
+        "on-surface":"#1b1c1c","on-surface-variant":"#40484e","outline":"#70787f",
+        "outline-variant":"#c0c7cf","surface-container-low":"#f6f3f2",
+        "surface-container-lowest":"#ffffff","surface-container-highest":"#e5e2e1",
+        "secondary-container":"#75d1fd","on-secondary-container":"#005976",
+        "primary":"#005375","primary-container":"#1e6c93","on-primary":"#ffffff",
+        "error":"#ba1a1a"
+      }
+    }
+  }
+}
+</script>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Hanken Grotesk', sans-serif; font-size: 16px; }
+
+  .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeSlideUp {
+    from { opacity:0; transform:translateY(32px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  @keyframes fadeSlideRight {
+    from { opacity:0; transform:translateX(-32px); }
+    to   { opacity:1; transform:translateX(0); }
+  }
+  @keyframes floatCard {
+    0%,100% { transform:translateY(0px); }
+    50%      { transform:translateY(-8px); }
+  }
+  @keyframes shimmerLine {
+    0%   { width:0%; opacity:0; }
+    50%  { opacity:1; }
+    100% { width:100%; opacity:0; }
+  }
+  @keyframes pulseDot {
+    0%,100% { transform:scale(1); opacity:1; }
+    50%      { transform:scale(1.4); opacity:.6; }
+  }
+  @keyframes rotateIcon {
+    from { transform:rotate(0deg); }
+    to   { transform:rotate(360deg); }
+  }
+  @keyframes particleDrift {
+    0%   { transform:translateY(0) translateX(0) scale(1); opacity:.5; }
+    100% { transform:translateY(-120px) translateX(30px) scale(0); opacity:0; }
+  }
+
+  .animate-fade-up    { animation:fadeSlideUp .7s cubic-bezier(.4,0,.2,1) both; }
+  .animate-fade-right { animation:fadeSlideRight .7s cubic-bezier(.4,0,.2,1) both; }
+  .delay-100 { animation-delay:.1s; }
+  .delay-200 { animation-delay:.2s; }
+  .delay-300 { animation-delay:.3s; }
+  .delay-400 { animation-delay:.4s; }
+  .delay-500 { animation-delay:.5s; }
+  .delay-600 { animation-delay:.6s; }
+  .delay-700 { animation-delay:.7s; }
+  .delay-800 { animation-delay:.8s; }
+
+  /* Float cards */
+  .float-card-1 { animation:floatCard 6s ease-in-out infinite; }
+  .float-card-2 { animation:floatCard 7s ease-in-out infinite .8s; }
+  .float-card-3 { animation:floatCard 5s ease-in-out infinite 1.6s; }
+  .float-card-4 { animation:floatCard 8s ease-in-out infinite 2.4s; }
+
+  /* Blueprint grid overlay */
+  .blueprint-grid {
+    background-image:
+      linear-gradient(rgba(73,170,212,.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(73,170,212,.07) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  /* Glass card */
+  .glass-card {
+    background:rgba(255,255,255,.10);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    border:1px solid rgba(255,255,255,.15);
+    transition:background .3s, transform .3s, box-shadow .3s;
+  }
+  .glass-card:hover {
+    background:rgba(255,255,255,.18);
+    transform:translateY(-4px);
+    box-shadow:0 20px 40px rgba(0,0,0,.3);
+  }
+
+  /* Shimmer accent line */
+  .shimmer-line {
+    position:relative; overflow:hidden; height:3px;
+    background:rgba(73,170,212,.25); border-radius:9999px;
+  }
+  .shimmer-line::after {
+    content:''; position:absolute; top:0; left:0; height:100%;
+    background:linear-gradient(90deg,transparent,#49AAD4,transparent);
+    animation:shimmerLine 2.5s ease-in-out infinite;
+  }
+
+  /* Particles */
+  .particle {
+    position:absolute; border-radius:50%;
+    background:rgba(73,170,212,.5);
+    pointer-events:none;
+  }
+
+  /* Form styles */
+  .form-panel { transition: all .4s cubic-bezier(.4,0,.2,1); }
+  input:-webkit-autofill { -webkit-box-shadow:0 0 0 1000px #fff inset; }
+  .tab-active   { background:#1E6C93; color:#fff; box-shadow:0 4px 14px rgba(30,108,147,.35); }
+  .tab-inactive { color:#40484e; }
+  .tab-inactive:hover { background:#e5e2e1; }
+
+  /* Input focus animation */
+  .field-wrap { position:relative; }
+  .field-wrap input:focus + .focus-line { width:100%; }
+  .focus-line {
+    position:absolute; bottom:0; left:0; height:2px;
+    background:linear-gradient(90deg,#1E6C93,#49AAD4);
+    width:0; transition:width .35s ease; border-radius:0 0 4px 4px;
+  }
+
+  /* Submit button */
+  .btn-submit {
+    position:relative; overflow:hidden;
+    background:linear-gradient(135deg,#1E6C93 0%,#49AAD4 100%);
+    transition:transform .15s, box-shadow .2s;
+  }
+  .btn-submit:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(30,108,147,.45); }
+  .btn-submit:active { transform:scale(.97); }
+  .btn-submit::after {
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(135deg,rgba(255,255,255,.15),transparent);
+    pointer-events:none;
+  }
+
+  /* Stat counter chips */
+  .stat-chip {
+    display:inline-flex; align-items:center; gap:8px;
+    padding:10px 18px; border-radius:9999px;
+    background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2);
+    color:#fff; font-size:14px; font-weight:600;
+    backdrop-filter:blur(8px);
+  }
+  .stat-chip .num { font-size:20px; font-weight:800; color:#49AAD4; }
+
+  /* Right panel scroll */
+  .auth-panel-scroll {
+    overflow-y:auto;
+    scrollbar-width:thin;
+    scrollbar-color:#c0c7cf transparent;
+  }
+  html {
+    overflow-y:auto;
+    scrollbar-width:thin;
+    scrollbar-color:#1E6C93 #f6f3f2;
+  }
+  body::-webkit-scrollbar,
+  .auth-panel-scroll::-webkit-scrollbar {
+    width:10px;
+  }
+  body::-webkit-scrollbar-track,
+  .auth-panel-scroll::-webkit-scrollbar-track {
+    background:#f6f3f2;
+  }
+  body::-webkit-scrollbar-thumb,
+  .auth-panel-scroll::-webkit-scrollbar-thumb {
+    background:#1E6C93;
+    border-radius:999px;
+    border:2px solid #f6f3f2;
+  }
+</style>
+</head>
+<body class="bg-background min-h-screen flex items-stretch overflow-x-hidden overflow-y-auto">
+
+<!-- Flash messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div id="flash-container" class="fixed top-4 right-4 z-[200] space-y-2 max-w-sm">
+      {% for category, message in messages %}
+        <div class="flash-msg flex items-start gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium animate-fade-up
+          {% if category == 'success' %}bg-green-50 border border-green-200 text-green-800
+          {% elif category == 'error' %}bg-red-50 border border-red-200 text-red-800
+          {% else %}bg-blue-50 border border-blue-200 text-blue-800{% endif %}">
+          <span class="material-symbols-outlined text-base mt-0.5">
+            {% if category == 'success' %}check_circle{% elif category == 'error' %}error{% else %}info{% endif %}
+          </span>
+          <span>{{ message }}</span>
+          <button onclick="this.parentElement.remove()" class="ml-auto opacity-60 hover:opacity-100">
+            <span class="material-symbols-outlined text-sm">close</span>
+          </button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<main class="flex w-full min-h-screen">
+
+  <!-- ════════════════════════════════════════
+       LEFT — Visual Hero Panel
+  ════════════════════════════════════════ -->
+  <section class="hidden lg:flex lg:w-[58%] relative bg-structure-dark overflow-hidden blueprint-grid">
+
+    <!-- Background photo -->
+    <div class="absolute inset-0 z-0">
+      <img src="{{ url_for('static', filename='images/login-building.jpg') }}"
+           alt="Construction cranes at high-rise building site" class="w-full h-full object-cover opacity-55"/>
+      <div class="absolute inset-0" style="background:linear-gradient(135deg,rgba(33,33,33,.9) 0%,rgba(30,108,147,.48) 58%,rgba(33,33,33,.68) 100%)"></div>
+    </div>
+
+    <!-- Floating particles -->
+    <div id="particles" class="absolute inset-0 z-0 pointer-events-none overflow-hidden"></div>
+
+    <!-- Content -->
+    <div class="relative z-10 flex flex-col justify-between w-full p-14">
+
+      <!-- Brand -->
+      <div class="animate-fade-right">
+        <div class="flex items-center gap-4 mb-3">
+          <div class="w-12 h-12 rounded-2xl bg-sky-accent/20 border border-sky-accent/40 flex items-center justify-center">
+            <span class="material-symbols-outlined text-sky-accent text-2xl">domain</span>
+          </div>
+          <div>
+            <div class="text-sky-accent text-xs font-bold tracking-[0.25em] uppercase">Est. 2008</div>
+            <div class="text-white text-2xl font-black" style="font-family:'Merriweather',serif;letter-spacing:-0.01em">VEKAS</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero headline -->
+      <div class="my-auto">
+        <!-- Big headline -->
+        <div class="mb-8 animate-fade-right delay-100">
+          <h1 class="text-white font-black leading-none mb-4"
+              style="font-family:'Merriweather',serif;font-size:clamp(2.8rem,4.5vw,4.5rem);letter-spacing:-0.02em">
+            Build.<br/>
+            <span style="color:#49AAD4">Manage.</span><br/>
+            Deliver.
+          </h1>
+          <p class="text-white/75 leading-relaxed" style="font-size:clamp(1.05rem,1.5vw,1.25rem);max-width:480px">
+            The all-in-one construction management platform trusted by leading firms across India.
+          </p>
+        </div>
+
+        <!-- Shimmer accent -->
+        <div class="shimmer-line w-32 mb-10 animate-fade-right delay-200"></div>
+
+        <!-- Stat chips -->
+        <div class="flex flex-wrap gap-3 mb-12 animate-fade-right delay-300">
+          <div class="stat-chip">
+            <span class="material-symbols-outlined text-sky-accent text-lg">business_center</span>
+            <span class="num">500+</span> Projects
+          </div>
+          <div class="stat-chip">
+            <span class="material-symbols-outlined text-sky-accent text-lg">group</span>
+            <span class="num">1,200+</span> Engineers
+          </div>
+          <div class="stat-chip">
+            <span class="material-symbols-outlined text-sky-accent text-lg">location_on</span>
+            <span class="num">12</span> States
+          </div>
+        </div>
+
+        <!-- Feature cards grid -->
+        <div class="grid grid-cols-2 gap-4 animate-fade-right delay-400">
+          <div class="glass-card p-5 rounded-2xl float-card-1">
+            <div class="w-10 h-10 rounded-xl bg-sky-accent/20 flex items-center justify-center mb-4">
+              <span class="material-symbols-outlined text-sky-accent text-2xl">architecture</span>
+            </div>
+            <h3 class="text-white font-bold mb-2" style="font-size:1rem">Blueprint Precision</h3>
+            <p class="text-white/55" style="font-size:0.85rem;line-height:1.5">High-fidelity technical viewers with full version history and annotation tools.</p>
+          </div>
+          <div class="glass-card p-5 rounded-2xl float-card-2">
+            <div class="w-10 h-10 rounded-xl bg-sky-accent/20 flex items-center justify-center mb-4">
+              <span class="material-symbols-outlined text-sky-accent text-2xl">smart_toy</span>
+            </div>
+            <h3 class="text-white font-bold mb-2" style="font-size:1rem">AI Analysis</h3>
+            <p class="text-white/55" style="font-size:0.85rem;line-height:1.5">Claude-powered BOQ generation and intelligent document analysis for every project.</p>
+          </div>
+          <div class="glass-card p-5 rounded-2xl float-card-3">
+            <div class="w-10 h-10 rounded-xl bg-sky-accent/20 flex items-center justify-center mb-4">
+              <span class="material-symbols-outlined text-sky-accent text-2xl">folder_open</span>
+            </div>
+            <h3 class="text-white font-bold mb-2" style="font-size:1rem">File Management</h3>
+            <p class="text-white/55" style="font-size:0.85rem;line-height:1.5">Centralised drawing, document, and output storage per project with inline preview.</p>
+          </div>
+          <div class="glass-card p-5 rounded-2xl float-card-4">
+            <div class="w-10 h-10 rounded-xl bg-sky-accent/20 flex items-center justify-center mb-4">
+              <span class="material-symbols-outlined text-sky-accent text-2xl">group</span>
+            </div>
+            <h3 class="text-white font-bold mb-2" style="font-size:1rem">Team Collaboration</h3>
+            <p class="text-white/55" style="font-size:0.85rem;line-height:1.5">Role-based access for architects, engineers, site managers, and clients.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex items-center gap-5 text-white/35 mt-8" style="font-size:0.8rem">
+        <span class="flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-sm">copyright</span>
+          2025 VEKAS GLOBAL
+        </span>
+        <span class="w-1 h-1 bg-white/20 rounded-full"></span>
+        <a href="#" class="hover:text-sky-accent transition-colors">Privacy Policy</a>
+        <span class="w-1 h-1 bg-white/20 rounded-full"></span>
+        <a href="#" class="hover:text-sky-accent transition-colors">Terms</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════
+       RIGHT — Auth Form
+  ════════════════════════════════════════ -->
+  <section class="w-full lg:w-[42%] bg-foundation-white flex flex-col items-center justify-center px-6 py-10 md:px-12 auth-panel-scroll">
+
+    <!-- Mobile brand -->
+    <div class="lg:hidden w-full mb-10 text-center animate-fade-up">
+      <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-blueprint-blue/10 mb-4">
+        <span class="material-symbols-outlined text-blueprint-blue text-3xl">domain</span>
+      </div>
+      <h1 class="text-blueprint-blue font-black text-3xl" style="font-family:'Merriweather',serif">VEKAS</h1>
+      <p class="text-on-surface-variant text-sm mt-1 tracking-wider uppercase">Construction Management Portal</p>
+    </div>
+
+    <div class="w-full max-w-md animate-fade-up delay-100">
+
+      <!-- Tabs -->
+      <div class="bg-surface-container-low p-1.5 rounded-2xl flex mb-8 border border-outline-variant/30 shadow-sm">
+        <button id="tab-signin" onclick="switchTab('signin')"
+          class="flex-1 py-3 font-bold rounded-xl transition-all duration-300 tab-active" style="font-size:0.95rem">
+          Sign In
+        </button>
+        <button id="tab-signup" onclick="switchTab('signup')"
+          class="flex-1 py-3 font-bold rounded-xl transition-all duration-300 tab-inactive" style="font-size:0.95rem">
+          Sign Up
+        </button>
+      </div>
+
+      <!-- ── SIGN IN FORM ── -->
+      <div id="signin-panel" class="form-panel animate-fade-up delay-200">
+        <div class="mb-8">
+          <h2 class="font-black text-on-surface" style="font-family:'Merriweather',serif;font-size:1.75rem;letter-spacing:-0.01em">Welcome Back</h2>
+          <p class="text-on-surface-variant mt-1" style="font-size:1rem">Access your project portfolio</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('login') }}" id="signin-form" onsubmit="return validateSignin()">
+          <input type="hidden" name="action" value="signin"/>
+          <div class="space-y-5">
+            <div>
+              <label class="block font-bold text-on-surface mb-2 uppercase tracking-wide" style="font-size:0.78rem">Professional Email</label>
+              <div class="relative field-wrap">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-xl transition-colors" style="pointer-events:none">mail</span>
+                <input name="email" type="email" placeholder="name@company.com" required autocomplete="email"
+                  class="w-full pl-12 pr-4 py-4 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-sky-accent focus:border-sky-accent transition-all outline-none"
+                  style="font-size:0.95rem"/>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <label class="font-bold text-on-surface uppercase tracking-wide" style="font-size:0.78rem">Password</label>
+                <a href="#" class="text-blueprint-blue hover:underline font-medium" style="font-size:0.85rem">Forgot password?</a>
+              </div>
+              <div class="relative field-wrap">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-xl" style="pointer-events:none">lock</span>
+                <input id="signin-password" name="password" type="password" placeholder="••••••••" required autocomplete="current-password"
+                  class="w-full pl-12 pr-12 py-4 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-sky-accent focus:border-sky-accent transition-all outline-none"
+                  style="font-size:0.95rem"/>
+                <button type="button" onclick="togglePwd('signin-password','eye-signin')"
+                  class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-blueprint-blue transition-colors">
+                  <span id="eye-signin" class="material-symbols-outlined text-xl">visibility</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" id="signin-btn"
+            class="btn-submit mt-8 w-full py-4 text-white font-bold rounded-xl flex items-center justify-center gap-3 shadow-md"
+            style="font-size:1rem;letter-spacing:0.02em">
+            <span id="signin-spinner" class="material-symbols-outlined text-xl hidden animate-spin">progress_activity</span>
+            Sign In to Portal
+            <span class="material-symbols-outlined text-xl">arrow_forward</span>
+          </button>
+        </form>
+
+        <p class="text-center text-on-surface-variant mt-6" style="font-size:0.9rem">
+          No account? <button onclick="switchTab('signup')" class="text-blueprint-blue font-bold hover:underline">Register now</button>
+        </p>
+      </div>
+
+      <!-- ── SIGN UP FORM ── -->
+      <div id="signup-panel" class="form-panel hidden">
+        <div class="mb-8">
+          <h2 class="font-black text-on-surface" style="font-family:'Merriweather',serif;font-size:1.75rem;letter-spacing:-0.01em">Create Account</h2>
+          <p class="text-on-surface-variant mt-1" style="font-size:1rem">Join the VEKAS project portal</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('login') }}" id="signup-form" onsubmit="return validateSignup()">
+          <input type="hidden" name="action" value="signup"/>
+          <div class="space-y-4">
+            <div>
+              <label class="block font-bold text-on-surface mb-2 uppercase tracking-wide" style="font-size:0.78rem">Full Name</label>
+              <div class="relative">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-xl" style="pointer-events:none">person</span>
+                <input name="name" type="text" placeholder="eg.,John" required autocomplete="name"
+                  class="w-full pl-12 pr-4 py-4 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-sky-accent focus:border-sky-accent outline-none" style="font-size:0.95rem"/>
+              </div>
+            </div>
+            <div>
+              <label class="block font-bold text-on-surface mb-2 uppercase tracking-wide" style="font-size:0.78rem">Work Email</label>
+              <div class="relative">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-xl" style="pointer-events:none">mail</span>
+                <input name="reg_email" type="email" placeholder="name@company.com" required autocomplete="email"
+                  class="w-full pl-12 pr-4 py-4 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-sky-accent focus:border-sky-accent outline-none" style="font-size:0.95rem"/>
+              </div>
+            </div>
+            <div>
+              <label class="block font-bold text-on-surface mb-2 uppercase tracking-wide" style="font-size:0.78rem">Company <span class="text-outline font-normal normal-case">(optional)</span></label>
+              <div class="relative">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-xl" style="pointer-events:none">business</span>
+                <input name="company" type="text" placeholder="VEKAS Construction Ltd"
+                  class="w-full pl-12 pr-4 py-4 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-sky-accent focus:border-sky-accent outline-none" style="font-size:0.95rem"/>
+              </div>
+            </div>
+            <div>
+              <label class="block font-bold text-on-surface mb-2 uppercase tracking-wide" style="font-size:0.78rem">Password</label>
+              <div class="relative">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-xl" style="pointer-events:none">lock</span>
+                <input id="signup-password" name="reg_password" type="password" placeholder="Min. 8 characters" required
+                  class="w-full pl-12 pr-12 py-4 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-sky-accent focus:border-sky-accent outline-none" style="font-size:0.95rem"/>
+                <button type="button" onclick="togglePwd('signup-password','eye-signup')"
+                  class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-blueprint-blue transition-colors">
+                  <span id="eye-signup" class="material-symbols-outlined text-xl">visibility</span>
+                </button>
+              </div>
+              <div class="mt-2.5 h-2 bg-outline-variant/30 rounded-full overflow-hidden">
+                <div id="pwd-strength-bar" class="h-full rounded-full transition-all duration-500 w-0 bg-error"></div>
+              </div>
+              <p id="pwd-strength-text" class="mt-1 font-medium" style="font-size:0.78rem;color:#70787f"></p>
+            </div>
+            <div>
+              <label class="block font-bold text-on-surface mb-2 uppercase tracking-wide" style="font-size:0.78rem">Confirm Password</label>
+              <div class="relative">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-xl" style="pointer-events:none">lock_reset</span>
+                <input id="confirm-password" name="confirm_password" type="password" placeholder="Repeat password" required
+                  class="w-full pl-12 pr-4 py-4 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-sky-accent focus:border-sky-accent outline-none" style="font-size:0.95rem"/>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" id="signup-btn"
+            class="btn-submit mt-6 w-full py-4 text-white font-bold rounded-xl flex items-center justify-center gap-3 shadow-md"
+            style="font-size:1rem;letter-spacing:0.02em">
+            <span id="signup-spinner" class="material-symbols-outlined text-xl hidden animate-spin">progress_activity</span>
+            Create Account
+            <span class="material-symbols-outlined text-xl">arrow_forward</span>
+          </button>
+        </form>
+
+        <p class="text-center text-on-surface-variant mt-6" style="font-size:0.9rem">
+          Already have an account? <button onclick="switchTab('signin')" class="text-blueprint-blue font-bold hover:underline">Sign in</button>
+        </p>
+      </div>
+
+      <!-- Trust badges -->
+      <div class="mt-10 pt-6 border-t border-outline-variant/30 flex items-center justify-center gap-6">
+        <div class="flex items-center gap-1.5 text-on-surface-variant" style="font-size:0.78rem">
+          <span class="material-symbols-outlined text-green-500" style="font-size:16px">verified_user</span>
+          <span>SSL Secured</span>
+        </div>
+        <div class="flex items-center gap-1.5 text-on-surface-variant" style="font-size:0.78rem">
+          <span class="material-symbols-outlined text-blueprint-blue" style="font-size:16px">lock</span>
+          <span>Data Encrypted</span>
+        </div>
+        <div class="flex items-center gap-1.5 text-on-surface-variant" style="font-size:0.78rem">
+          <span class="material-symbols-outlined text-sky-accent" style="font-size:16px">cloud_done</span>
+          <span>99.9% Uptime</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+// ── Particles
+(function(){
+  const container = document.getElementById('particles');
+  if (!container) return;
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement('div');
+    const size = Math.random() * 5 + 2;
+    p.className = 'particle';
+    p.style.cssText = `
+      width:${size}px; height:${size}px;
+      left:${Math.random()*100}%;
+      top:${Math.random()*100}%;
+      animation:particleDrift ${Math.random()*8+6}s ease-in infinite ${Math.random()*6}s;
+    `;
+    container.appendChild(p);
+  }
+})();
+
+// ── Tab toggle
+const TAB = '{{ tab }}';
+function switchTab(t) {
+  document.getElementById('signin-panel').classList.toggle('hidden', t !== 'signin');
+  document.getElementById('signup-panel').classList.toggle('hidden', t !== 'signup');
+  document.getElementById('tab-signin').className = 'flex-1 py-3 font-bold rounded-xl transition-all duration-300 ' + (t==='signin' ? 'tab-active' : 'tab-inactive');
+  document.getElementById('tab-signup').className = 'flex-1 py-3 font-bold rounded-xl transition-all duration-300 ' + (t==='signup' ? 'tab-active' : 'tab-inactive');
+  // Update font-size
+  ['tab-signin','tab-signup'].forEach(id => document.getElementById(id).style.fontSize = '0.95rem');
+}
+switchTab(TAB === 'signup' ? 'signup' : 'signin');
+
+// ── Password visibility toggle
+function togglePwd(inputId, iconId) {
+  const inp = document.getElementById(inputId);
+  const ico = document.getElementById(iconId);
+  if (inp.type === 'password') { inp.type = 'text'; ico.textContent = 'visibility_off'; }
+  else { inp.type = 'password'; ico.textContent = 'visibility'; }
+}
+
+// ── Password strength indicator
+document.getElementById('signup-password').addEventListener('input', function() {
+  const pw = this.value;
+  const bar = document.getElementById('pwd-strength-bar');
+  const txt = document.getElementById('pwd-strength-text');
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  const levels = [
+    {w:'0%', cls:'bg-error', label:''},
+    {w:'25%', cls:'bg-red-500', label:'Weak'},
+    {w:'50%', cls:'bg-orange-400', label:'Fair'},
+    {w:'75%', cls:'bg-yellow-500', label:'Good'},
+    {w:'100%', cls:'bg-green-500', label:'Strong'},
+  ];
+  const lvl = levels[score];
+  bar.style.width = lvl.w;
+  bar.className = 'h-full rounded-full transition-all duration-500 ' + lvl.cls;
+  txt.textContent = lvl.label;
+  txt.style.color = score <= 1 ? '#ba1a1a' : score === 2 ? '#f97316' : score === 3 ? '#eab308' : '#22c55e';
+});
+
+// ── Form validations
+function validateSignin() {
+  const btn = document.getElementById('signin-btn');
+  const sp  = document.getElementById('signin-spinner');
+  btn.disabled = true; sp.classList.remove('hidden');
+  return true;
+}
+function validateSignup() {
+  const pw  = document.getElementById('signup-password').value;
+  const cpw = document.getElementById('confirm-password').value;
+  if (pw !== cpw) { alert('Passwords do not match.'); return false; }
+  if (pw.length < 8) { alert('Password must be at least 8 characters.'); return false; }
+  const btn = document.getElementById('signup-btn');
+  const sp  = document.getElementById('signup-spinner');
+  btn.disabled = true; sp.classList.remove('hidden');
+  return true;
+}
+
+// ── Auto-hide flash messages
+setTimeout(() => {
+  document.querySelectorAll('.flash-msg').forEach(el => {
+    el.style.opacity = '0'; el.style.transform = 'translateX(100%)';
+    el.style.transition = 'all .4s ease';
+    setTimeout(() => el.remove(), 400);
+  });
+}, 5000);
+</script>
+</body>
+</html>

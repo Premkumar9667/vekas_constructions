@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>VEKAS Construction — Project Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>
+tailwind.config={theme:{extend:{colors:{
+  "blueprint-blue":"#1E6C93","sky-accent":"#49AAD4","structure-dark":"#212121",
+  "foundation-white":"#FFFFFF","surface":"#fcf9f8","background":"#fcf9f8",
+  "on-surface":"#1b1c1c","on-surface-variant":"#40484e","outline":"#70787f",
+  "outline-variant":"#c0c7cf","surface-container-low":"#f6f3f2",
+  "surface-container":"#f0eded","surface-container-high":"#eae7e7",
+  "surface-container-lowest":"#ffffff","surface-container-highest":"#e5e2e1",
+  "secondary-container":"#75d1fd","on-secondary-container":"#005976",
+  "primary":"#005375","primary-container":"#1e6c93","on-primary":"#ffffff",
+  "tertiary-fixed":"#ffddb7","on-tertiary-fixed-variant":"#653e00","error":"#ba1a1a",
+  "secondary":"#006686"
+}}}}
+</script>
+<style>
+  .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+  body{font-family:'Hanken Grotesk',sans-serif;background:#fcf9f8}
+  .modal-overlay{background:rgba(33,33,33,.45);backdrop-filter:blur(5px)}
+  .status-badge-planning{background:#e5e2e1;color:#40484e}
+  .status-badge-in-progress{background:#75d1fd;color:#005976}
+  .status-badge-review{background:#ffddb7;color:#653e00}
+  .status-badge-completed{background:#d4edda;color:#155724}
+  .status-badge-delayed{background:#ffdad6;color:#93000a}
+  .card-appear{animation:fadeSlideUp .35s ease both}
+  @keyframes fadeSlideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  @keyframes softPop{from{opacity:0;transform:scale(.96) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  @keyframes glowSweep{0%{transform:translateX(-120%)}100%{transform:translateX(140%)}}
+  body { font-size:16px; }
+  @keyframes slideInLeft{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:none}}
+  .sidebar-item { animation:slideInLeft .4s ease both; }
+  .sidebar-item:nth-child(1){animation-delay:.05s}
+  .sidebar-item:nth-child(2){animation-delay:.1s}
+  .sidebar-item:nth-child(3){animation-delay:.15s}
+  .team-card{animation:softPop .42s ease both}
+  .team-card::before{content:'';position:absolute;inset:0;transform:translateX(-120%);background:linear-gradient(90deg,transparent,rgba(73,170,212,.10),transparent);transition:transform .7s ease;pointer-events:none}
+  .team-card:hover::before{animation:glowSweep .9s ease}
+  .nav-pill-active{background:#75d1fd;color:#005976;font-weight:700}
+  .nav-pill-muted{color:#40484e}
+  .view-toggle-active{background:#1E6C93;color:#fff}
+  .view-toggle-muted{background:#fff;color:#40484e}
+  .dashboard-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+  .dashboard-filters{display:grid;grid-template-columns:minmax(220px,1.4fr) repeat(3,minmax(130px,1fr));gap:12px;flex:1;min-width:0}
+  .dashboard-actions{display:flex;gap:12px;align-items:stretch}
+  @media (max-width:1280px){
+    .dashboard-toolbar{display:block}
+    .dashboard-filters{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:12px}
+  }
+  @media (max-width:640px){
+    .dashboard-filters{grid-template-columns:1fr}
+    .dashboard-actions{width:100%}
+    .dashboard-actions > button{flex:1}
+  }
+  #project-grid.list-view{display:flex;flex-direction:column;gap:14px}
+  #project-grid.list-view .project-card{width:100%}
+  #project-grid.list-view .project-card-body{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:14px 20px;padding:18px 22px}
+  #project-grid.list-view .project-card-top{grid-column:1 / -1;margin:0}
+  #project-grid.list-view .project-card-link{grid-column:1}
+  #project-grid.list-view .project-card-image{display:none}
+  #project-grid.list-view .project-card-actions{grid-column:2;grid-row:2 / span 2;margin:0;padding:0;border:0;align-self:center;min-width:190px}
+  #project-grid.list-view .project-created-date{display:inline-flex}
+  #project-grid.list-view .project-card-meta{justify-content:flex-start;gap:18px}
+  @media (max-width:900px){
+    #project-grid.list-view .project-card-body{display:block}
+    #project-grid.list-view .project-card-actions{margin-top:16px;padding-top:16px;border-top:1px solid rgba(192,199,207,.4)}
+  }
+  .form-field label{display:block;margin-bottom:8px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#40484e}
+  .phone-field{display:flex;align-items:center;overflow:hidden;border:1px solid #c0c7cf;border-radius:12px;background:#fff}
+  .phone-field span{align-self:stretch;display:flex;align-items:center;padding:0 12px;background:#f0eded;border-right:1px solid #c0c7cf;color:#40484e;font-size:14px;font-weight:800}
+  .phone-field input{min-width:0;flex:1;border:0;background:transparent;padding:12px 14px;font-size:14px;outline:0}
+</style>
+</head>
+<body class="bg-background text-on-surface">
+
+<!-- Flash messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div id="flash-container" class="fixed top-4 right-4 z-[200] space-y-2 max-w-sm">
+      {% for category, message in messages %}
+        <div class="flash-msg flex items-start gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium
+          {% if category=='success' %}bg-green-50 border border-green-200 text-green-800
+          {% elif category=='error' %}bg-red-50 border border-red-200 text-red-800
+          {% else %}bg-blue-50 border border-blue-200 text-blue-800{% endif %}">
+          <span class="material-symbols-outlined text-base mt-0.5">
+            {% if category=='success' %}check_circle{% elif category=='error' %}error{% else %}info{% endif %}
+          </span>
+          <span>{{ message }}</span>
+          <button onclick="this.parentElement.remove()" class="ml-auto opacity-60 hover:opacity-100">
+            <span class="material-symbols-outlined text-sm">close</span>
+          </button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<!-- Top Navigation -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-12 h-16 bg-foundation-white border-b border-outline-variant shadow-sm">
+  <div class="flex items-center gap-8">
+    <a href="{{ url_for('dashboard') }}" class="flex items-center gap-3">
+      <img src="{{ url_for('static', filename='images/vekas-logo.jpeg') }}" alt="VEKAS Construction" class="h-14 w-60 object-contain object-left"/>
+    </a>
+    <nav class="hidden md:flex gap-6 items-center h-full">
+      <a href="{{ url_for('dashboard') }}" class="text-primary border-b-2 border-primary pb-1 text-sm font-semibold">Dashboard</a>
+      <a href="{{ url_for('dashboard') }}" class="text-on-surface-variant hover:text-primary transition-colors text-sm font-medium">Projects</a>
+      <a href="#" class="text-on-surface-variant hover:text-primary transition-colors text-sm font-medium">Clients</a>
+      <a href="#" class="text-on-surface-variant hover:text-primary transition-colors text-sm font-medium">Reports</a>
+    </nav>
+  </div>
+  <div class="flex items-center gap-3">
+    <button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors relative">
+      <span class="material-symbols-outlined">notifications</span>
+    </button>
+    <button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors">
+      <span class="material-symbols-outlined">settings</span>
+    </button>
+    <div class="relative" id="user-menu-wrapper">
+      <button onclick="toggleUserMenu()" class="flex items-center gap-2 hover:bg-surface-container rounded-full pl-2 pr-3 py-1 transition-colors">
+        <div class="w-8 h-8 rounded-full bg-blueprint-blue flex items-center justify-center text-white text-xs font-bold">
+          {{ current_user.name[:2].upper() if current_user.name else 'VK' }}
+        </div>
+        <span class="text-sm font-medium text-on-surface hidden md:block">{{ current_user.name.split()[0] }}</span>
+      </button>
+      <div id="user-menu" class="hidden absolute right-0 top-full mt-2 w-48 bg-foundation-white rounded-xl shadow-xl border border-outline-variant/50 overflow-hidden z-50">
+        <div class="px-4 py-3 border-b border-outline-variant/30">
+          <p class="font-semibold text-sm text-on-surface truncate">{{ current_user.name }}</p>
+          <p class="text-xs text-outline truncate">{{ current_user.email }}</p>
+        </div>
+        <a href="#" class="flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container transition-colors">
+          <span class="material-symbols-outlined text-base">account_circle</span> My Profile
+        </a>
+        <a href="#" class="flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container transition-colors">
+          <span class="material-symbols-outlined text-base">settings</span> Settings
+        </a>
+        <div class="border-t border-outline-variant/30"></div>
+        <a href="{{ url_for('logout') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-error hover:bg-red-50 transition-colors">
+          <span class="material-symbols-outlined text-base">logout</span> Sign Out
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Sidebar (Desktop) -->
+<aside class="hidden lg:flex flex-col fixed left-0 top-16 h-[calc(100vh-64px)] w-64 p-4 space-y-1 bg-surface-container-low border-r border-outline-variant">
+  <div class="px-2 py-4 mb-2">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-on-primary">
+        <span class="material-symbols-outlined">architecture</span>
+      </div>
+      <div>
+        <p class="text-sm font-bold text-on-surface leading-tight">All Projects</p>
+        <p class="text-xs text-on-surface-variant">{{ total_projects }} active</p>
+      </div>
+    </div>
+  </div>
+  <button type="button" id="overview-nav" onclick="showDashboardView('overview')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all nav-pill-active">
+    <span class="material-symbols-outlined">dashboard</span> Overview
+  </button>
+  {% if is_admin %}
+  <button type="button" id="team-nav" onclick="showDashboardView('team')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all nav-pill-muted hover:bg-surface-container-highest">
+    <span class="material-symbols-outlined">group</span> Team
+  </button>
+  {% endif %}
+</aside>
+
+<!-- Main -->
+<main class="lg:ml-64 pt-24 pb-24 px-5 md:px-12 min-h-screen">
+  <div class="max-w-7xl mx-auto">
+
+    <section id="overview-section" class="dashboard-view">
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="mb-5">
+        <h1 class="text-4xl font-bold text-structure-dark leading-tight" style="font-family:'Merriweather',serif">Project Pipeline</h1>
+        <p class="text-on-surface-variant mt-2 max-w-2xl">Manage and monitor the construction lifecycle of your portfolio.</p>
+      </div>
+      <div class="dashboard-toolbar">
+        <!-- Search -->
+        <div class="dashboard-filters">
+        <div class="relative">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
+          <input id="search-input" oninput="filterProjects()" type="text" placeholder="Search projects…"
+            class="w-full pl-9 pr-4 py-2.5 bg-surface-container border border-outline-variant rounded-lg text-sm outline-none focus:ring-2 focus:ring-sky-accent"/>
+        </div>
+          <select id="client-filter" onchange="filterProjects()"
+            class="w-full py-2.5 px-3 bg-surface-container border border-outline-variant rounded-lg text-sm outline-none focus:ring-2 focus:ring-sky-accent">
+            <option value="">All Clients</option>
+            {% for client, grouped_projects in projects|selectattr('client_name')|groupby('client_name') %}
+              <option value="{{ client|lower }}">{{ client }}</option>
+            {% endfor %}
+          </select>
+          <select id="status-filter" onchange="filterProjects()"
+            class="w-full py-2.5 px-3 bg-surface-container border border-outline-variant rounded-lg text-sm outline-none focus:ring-2 focus:ring-sky-accent">
+            <option value="">All Status</option>
+            <option>Planning</option>
+            <option>In Progress</option>
+            <option>Review</option>
+            <option>Completed</option>
+            <option>Delayed</option>
+          </select>
+          <select id="city-filter" onchange="filterProjects()"
+            class="w-full py-2.5 px-3 bg-surface-container border border-outline-variant rounded-lg text-sm outline-none focus:ring-2 focus:ring-sky-accent">
+            <option value="">All Cities</option>
+            {% for city, grouped_projects in projects|selectattr('city')|groupby('city') %}
+              <option value="{{ city|lower }}">{{ city }}</option>
+            {% endfor %}
+          </select>
+          <select id="state-filter" onchange="filterProjects()"
+            class="w-full py-2.5 px-3 bg-surface-container border border-outline-variant rounded-lg text-sm outline-none focus:ring-2 focus:ring-sky-accent">
+            <option value="">All States</option>
+            {% for state, grouped_projects in projects|selectattr('state')|groupby('state') %}
+              <option value="{{ state|lower }}">{{ state }}</option>
+            {% endfor %}
+          </select>
+          <select id="district-filter" onchange="filterProjects()"
+            class="w-full py-2.5 px-3 bg-surface-container border border-outline-variant rounded-lg text-sm outline-none focus:ring-2 focus:ring-sky-accent">
+            <option value="">All Districts</option>
+            {% for district, grouped_projects in projects|selectattr('district')|groupby('district') %}
+              <option value="{{ district|lower }}">{{ district }}</option>
+            {% endfor %}
+          </select>
+          <select id="day-filter" onchange="filterProjects()"
+            class="w-full py-2.5 px-3 bg-surface-container border border-outline-variant rounded-lg text-sm outline-none focus:ring-2 focus:ring-sky-accent">
+            <option value="">All Days</option>
+            <option value="today">Today</option>
+            <option value="week">Last 7 Days</option>
+            <option value="month">Last 30 Days</option>
+          </select>
+          <input id="exact-date-filter" onchange="filterProjects()" type="date" title="Filter by exact created date"
+            class="w-full py-2.5 px-3 bg-surface-container border border-outline-variant rounded-lg text-sm outline-none focus:ring-2 focus:ring-sky-accent"/>
+        </div>
+        <div class="dashboard-actions">
+          <div class="inline-flex rounded-lg border border-outline-variant bg-foundation-white overflow-hidden" aria-label="Project view mode">
+            <button id="grid-view-btn" type="button" onclick="setProjectView('grid')" class="view-toggle-active px-3 py-2.5 transition-colors" title="Grid view">
+              <span class="material-symbols-outlined text-lg block">grid_view</span>
+            </button>
+            <button id="list-view-btn" type="button" onclick="setProjectView('list')" class="view-toggle-muted px-3 py-2.5 border-l border-outline-variant transition-colors" title="List view">
+              <span class="material-symbols-outlined text-lg block">view_list</span>
+            </button>
+          </div>
+          <button onclick="openCreateModal()"
+            class="flex items-center gap-2 bg-blueprint-blue text-foundation-white px-5 py-2.5 rounded-lg text-sm font-bold hover:shadow-lg transition-all active:scale-95">
+            <span class="material-symbols-outlined">add</span> Create Project
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-5 mb-10">
+      <div class="md:col-span-2 bg-surface-container-low p-6 rounded-xl border border-outline-variant relative overflow-hidden group">
+        <div class="absolute top-0 right-0 w-32 h-32 -mr-8 -mt-8 bg-sky-accent opacity-10 rounded-full group-hover:scale-110 transition-transform duration-500"></div>
+        <p class="text-xs text-on-surface-variant uppercase tracking-wider mb-1">Total Projects</p>
+        <h2 class="text-5xl font-bold text-blueprint-blue" style="font-family:'Merriweather',serif">{{ total_projects }}</h2>
+        <p class="text-sm text-secondary mt-2 flex items-center gap-1">
+          <span class="material-symbols-outlined text-sm">trending_up</span> {{ active_count }} currently active
+        </p>
+      </div>
+      <div class="bg-foundation-white p-6 rounded-xl border border-outline-variant">
+        <p class="text-xs text-on-surface-variant uppercase tracking-wider mb-1">Active Sites</p>
+        <h2 class="text-3xl font-bold text-structure-dark">{{ active_count }}</h2>
+        <div class="w-full bg-surface-container h-2 rounded-full mt-3">
+          <div class="bg-blueprint-blue h-2 rounded-full transition-all" style="width:{{ [((active_count / total_projects * 100)|int if total_projects else 0), 100]|min }}%"></div>
+        </div>
+      </div>
+      <div class="bg-foundation-white p-6 rounded-xl border border-outline-variant">
+        <p class="text-xs text-on-surface-variant uppercase tracking-wider mb-1">Team Members</p>
+        <h2 class="text-3xl font-bold text-structure-dark">{{ total_users }}</h2>
+        <p class="text-sm text-on-surface-variant mt-2 flex items-center gap-1">
+          <span class="material-symbols-outlined text-sm">storage</span> {{ portfolio_storage }} used
+        </p>
+      </div>
+    </div>
+
+    <!-- Project grid -->
+    <div id="project-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      {% if projects %}
+        {% for p in projects %}
+        <div class="project-card card-appear bg-foundation-white rounded-xl border border-outline-variant overflow-hidden hover:shadow-md transition-shadow"
+             data-name="{{ p.name|lower }}"
+             data-client="{{ (p.client_name or '')|lower }}"
+             data-status="{{ p.status }}"
+             data-city="{{ (p.city or '')|lower }}"
+             data-state="{{ (p.state or '')|lower }}"
+             data-district="{{ (p.district or '')|lower }}"
+             data-created-date="{{ p.created_at.strftime('%Y-%m-%d') if p.created_at else '' }}"
+             style="animation-delay:{{ loop.index0 * 60 }}ms">
+          <div class="h-1 bg-blueprint-blue"></div>
+          <div class="project-card-body p-6">
+            <div class="project-card-top flex justify-between items-start mb-4">
+              <span class="px-3 py-1 rounded-full text-xs font-bold uppercase status-badge-{{ p.status|lower|replace(' ','-') }}">
+                {{ p.status }}
+              </span>
+              <div class="relative">
+                <button onclick="toggleCardMenu({{ p.id }})" class="text-outline hover:text-on-surface transition-colors p-1">
+                  <span class="material-symbols-outlined">more_vert</span>
+                </button>
+                <div id="card-menu-{{ p.id }}" class="hidden absolute right-0 top-full mt-1 w-40 bg-foundation-white rounded-xl shadow-xl border border-outline-variant/50 z-30 overflow-hidden">
+                  <a href="{{ url_for('project_detail', project_id=p.id) }}"
+                     class="flex items-center gap-2 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container">
+                    <span class="material-symbols-outlined text-sm">open_in_new</span> Open
+                  </a>
+                  <a href="{{ url_for('project_files', project_id=p.id) }}"
+                     class="flex items-center gap-2 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container">
+                    <span class="material-symbols-outlined text-sm">folder_open</span> Files
+                  </a>
+                  <button onclick="openEditModal({{ p.id }}, '{{ p.name|replace("'","\\'")|e }}', '{{ p.client_name|replace("'","\\'")|e }}', '{{ p.status }}', '{{ p.priority }}')"
+                     class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container">
+                    <span class="material-symbols-outlined text-sm">edit</span> Edit
+                  </button>
+                  <button onclick="confirmDeleteProject({{ p.id }}, '{{ p.name|replace("'","\\'")|e }}')"
+                     class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-error hover:bg-red-50">
+                    <span class="material-symbols-outlined text-sm">delete</span> Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+            <a href="{{ url_for('project_detail', project_id=p.id) }}" class="project-card-link block group">
+              <h3 class="text-xl font-bold text-structure-dark mb-1 group-hover:text-blueprint-blue transition-colors" style="font-family:'Merriweather',serif">
+                {{ p.name }}
+              </h3>
+              <p class="text-sm text-on-surface-variant mb-4">
+                {{ ('Client: ' + p.client_name) if p.client_name else 'No client assigned' }}
+              </p>
+              <!-- Placeholder image / icon for project -->
+              <div class="project-card-image aspect-video w-full rounded-lg overflow-hidden bg-surface-container mb-4 flex items-center justify-center">
+                {% if p.status == 'In Progress' %}
+                  <div class="w-full h-full bg-gradient-to-br from-blueprint-blue/20 to-sky-accent/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-5xl text-blueprint-blue/40">construction</span>
+                  </div>
+                {% elif p.status == 'Planning' %}
+                  <div class="w-full h-full bg-gradient-to-br from-slate-200/60 to-slate-100 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-5xl text-slate-400">architecture</span>
+                  </div>
+                {% elif p.status == 'Completed' %}
+                  <div class="w-full h-full bg-gradient-to-br from-green-100 to-emerald-50 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-5xl text-green-500">verified</span>
+                  </div>
+                {% else %}
+                  <div class="w-full h-full bg-gradient-to-br from-orange-100 to-amber-50 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-5xl text-orange-400">folder_open</span>
+                  </div>
+                {% endif %}
+              </div>
+            </a>
+            <div class="project-card-meta flex items-center justify-between text-xs text-on-surface-variant">
+              <span class="project-created-date hidden items-center gap-1">
+                <span class="material-symbols-outlined text-sm">event</span>
+                {{ p.created_at.strftime('%d %b %Y') if p.created_at else 'N/A' }}
+              </span>
+              <span class="flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">calendar_today</span>
+                {{ p.start_date_display }}
+              </span>
+              <span class="flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">insert_drive_file</span>
+                {{ p.file_count }} files
+              </span>
+              <span class="flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">person</span>
+                {{ p.creator_name or 'Unknown' }}
+              </span>
+            </div>
+            <div class="project-card-actions mt-4 pt-4 border-t border-outline-variant/40 flex gap-2">
+              <a href="{{ url_for('project_detail', project_id=p.id) }}"
+                 class="flex-1 py-2 text-center text-xs font-bold text-blueprint-blue border border-blueprint-blue rounded-lg hover:bg-blueprint-blue hover:text-white transition-all">
+                Open Project
+              </a>
+              <a href="{{ url_for('project_files', project_id=p.id) }}"
+                 class="flex-1 py-2 text-center text-xs font-bold text-on-surface-variant border border-outline-variant rounded-lg hover:bg-surface-container transition-all">
+                View Files
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="col-span-3 text-center py-24" id="empty-state">
+          <span class="material-symbols-outlined text-6xl text-outline/40 mb-4 block">business_center</span>
+          <h3 class="text-xl font-bold text-on-surface-variant mb-2" style="font-family:'Merriweather',serif">No projects yet</h3>
+          <p class="text-on-surface-variant mb-6">Create your first construction project to get started.</p>
+          <button onclick="openCreateModal()"
+            class="inline-flex items-center gap-2 bg-blueprint-blue text-white px-6 py-3 rounded-lg font-bold hover:shadow-lg transition-all">
+            <span class="material-symbols-outlined">add</span> Create First Project
+          </button>
+        </div>
+      {% endif %}
+    </div>
+    <!-- No results -->
+    <div id="no-results" class="hidden text-center py-16">
+      <span class="material-symbols-outlined text-5xl text-outline/40 mb-3 block">search_off</span>
+      <p class="text-on-surface-variant">No projects match your search.</p>
+    </div>
+    </section>
+
+    {% if is_admin %}
+    <section id="team-section" class="dashboard-view hidden">
+      <div class="relative overflow-hidden rounded-2xl border border-outline-variant bg-gradient-to-br from-foundation-white via-surface-container-low to-secondary-container/20 p-5 md:p-8 mb-6">
+        <div class="absolute right-0 top-0 h-36 w-36 translate-x-10 -translate-y-10 rounded-full bg-sky-accent/20"></div>
+        <div class="absolute left-10 bottom-0 h-16 w-16 translate-y-8 rounded-full bg-blueprint-blue/10"></div>
+        <div class="relative flex flex-col lg:flex-row lg:items-end justify-between gap-5">
+          <div>
+            <div class="inline-flex items-center gap-2 rounded-full bg-blueprint-blue/10 px-3 py-1 text-xs font-bold text-blueprint-blue mb-3">
+              <span class="material-symbols-outlined text-sm">groups</span>
+              Workforce activity
+            </div>
+            <h1 class="text-3xl md:text-4xl font-bold text-structure-dark" style="font-family:'Merriweather',serif">Team Command Center</h1>
+            <p class="text-on-surface-variant mt-2 max-w-2xl">Track users, estimated usage time, uploaded projects, files, and recent platform activity.</p>
+          </div>
+          <div class="grid grid-cols-3 gap-3 w-full lg:w-auto">
+            <div class="rounded-xl bg-foundation-white/80 border border-outline-variant/70 px-4 py-3 shadow-sm">
+              <p class="text-[11px] uppercase tracking-wider text-on-surface-variant">Users</p>
+              <p class="text-2xl font-black text-blueprint-blue">{{ total_users }}</p>
+            </div>
+            <div class="rounded-xl bg-foundation-white/80 border border-outline-variant/70 px-4 py-3 shadow-sm">
+              <p class="text-[11px] uppercase tracking-wider text-on-surface-variant">Projects</p>
+              <p class="text-2xl font-black text-blueprint-blue">{{ total_projects }}</p>
+            </div>
+            <div class="rounded-xl bg-foundation-white/80 border border-outline-variant/70 px-4 py-3 shadow-sm">
+              <p class="text-[11px] uppercase tracking-wider text-on-surface-variant">Storage</p>
+              <p class="text-lg font-black text-blueprint-blue">{{ portfolio_storage }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-col xl:flex-row gap-3 mb-6">
+        <div class="relative flex-1">
+          <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-lg">search</span>
+          <input id="team-search-input" oninput="filterTeam()" type="text" placeholder="Search username or email..."
+            class="w-full pl-12 pr-4 py-3 bg-foundation-white border border-outline-variant rounded-xl text-sm outline-none focus:ring-2 focus:ring-sky-accent/40 focus:border-sky-accent transition-all"/>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 xl:w-[500px]">
+          <button type="button" onclick="setTeamDays('all', this)" class="team-day-filter rounded-xl px-3 py-3 text-sm font-bold bg-blueprint-blue text-white shadow-sm">All</button>
+          <button type="button" onclick="setTeamDays('today', this)" class="team-day-filter rounded-xl px-3 py-3 text-sm font-bold bg-foundation-white border border-outline-variant text-on-surface-variant hover:border-sky-accent transition-all">Today</button>
+          <button type="button" onclick="setTeamDays('week', this)" class="team-day-filter rounded-xl px-3 py-3 text-sm font-bold bg-foundation-white border border-outline-variant text-on-surface-variant hover:border-sky-accent transition-all">7 Days</button>
+          <button type="button" onclick="setTeamDays('month', this)" class="team-day-filter rounded-xl px-3 py-3 text-sm font-bold bg-foundation-white border border-outline-variant text-on-surface-variant hover:border-sky-accent transition-all">30 Days</button>
+        </div>
+      </div>
+
+      <div id="team-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        {% for u in team_members %}
+        <article class="team-card relative overflow-hidden bg-foundation-white border border-outline-variant rounded-2xl p-5 hover:-translate-y-1 hover:shadow-xl transition-all duration-300"
+                 data-name="{{ (u.name ~ ' ' ~ u.email)|lower }}"
+                 data-days="{{ u.days_since_activity }}"
+                 data-usage-all="{{ u.usage_display_all }}"
+                 data-usage-today="{{ u.usage_display_today }}"
+                 data-usage-week="{{ u.usage_display_7 }}"
+                 data-usage-month="{{ u.usage_display_30 }}"
+                 data-projects-all="{{ u.project_count_all }}"
+                 data-projects-today="{{ u.project_count_today }}"
+                 data-projects-week="{{ u.project_count_7 }}"
+                 data-projects-month="{{ u.project_count_30 }}"
+                 data-files-all="{{ u.file_count_all }}"
+                 data-files-today="{{ u.file_count_today }}"
+                 data-files-week="{{ u.file_count_7 }}"
+                 data-files-month="{{ u.file_count_30 }}"
+                 style="animation-delay:{{ loop.index0 * 70 }}ms">
+          <div class="flex items-start justify-between gap-4 mb-5">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blueprint-blue to-sky-accent text-white flex items-center justify-center font-black shadow-md shrink-0">
+                {{ u.initials }}
+              </div>
+              <div class="min-w-0">
+                <h3 class="font-black text-structure-dark truncate">{{ u.name }}</h3>
+                <p class="text-xs text-on-surface-variant truncate">{{ u.email }}</p>
+              </div>
+            </div>
+            <span class="px-2.5 py-1 rounded-full bg-surface-container text-[11px] font-bold uppercase text-on-surface-variant">{{ u.role }}</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="rounded-xl bg-surface-container-low p-3">
+              <p class="text-[11px] text-on-surface-variant uppercase tracking-wide">Usage Time</p>
+              <p class="team-usage-value text-lg font-black text-blueprint-blue mt-1">{{ u.usage_display_all }}</p>
+            </div>
+            <div class="rounded-xl bg-surface-container-low p-3">
+              <p class="text-[11px] text-on-surface-variant uppercase tracking-wide">Projects Uploaded</p>
+              <p class="team-projects-value text-lg font-black text-blueprint-blue mt-1">{{ u.project_count_all }}</p>
+            </div>
+            <div class="rounded-xl bg-surface-container-low p-3">
+              <p class="text-[11px] text-on-surface-variant uppercase tracking-wide">Files</p>
+              <p class="team-files-value text-lg font-black text-blueprint-blue mt-1">{{ u.file_count_all }}</p>
+            </div>
+            <div class="rounded-xl bg-surface-container-low p-3">
+              <p class="text-[11px] text-on-surface-variant uppercase tracking-wide">Storage</p>
+              <p class="text-lg font-black text-blueprint-blue mt-1">{{ u.storage_display }}</p>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between gap-3 border-t border-outline-variant/40 pt-4 text-xs text-on-surface-variant">
+            <span class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm">schedule</span>
+              {{ u.last_active_display }}
+            </span>
+            <span class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm">person_add</span>
+              {{ u.joined_display }}
+            </span>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+
+      <div id="team-no-results" class="hidden text-center py-16">
+        <span class="material-symbols-outlined text-5xl text-outline/40 mb-3 block">manage_search</span>
+        <p class="font-bold text-on-surface">No team members found</p>
+        <p class="text-sm text-on-surface-variant mt-1">Try another username or day filter.</p>
+      </div>
+    </section>
+    {% endif %}
+  </div>
+</main>
+
+<!-- Mobile Bottom Nav -->
+<nav class="lg:hidden fixed bottom-0 left-0 w-full z-50 grid {% if is_admin %}grid-cols-2{% else %}grid-cols-1{% endif %} items-center px-4 py-2 bg-foundation-white border-t border-outline-variant">
+  <button type="button" id="overview-mobile-nav" onclick="showDashboardView('overview')" class="flex flex-col items-center gap-0.5 text-primary">
+    <span class="material-symbols-outlined">home</span>
+    <span class="text-[10px] font-bold">Overview</span>
+  </button>
+  {% if is_admin %}
+  <button type="button" id="team-mobile-nav" onclick="showDashboardView('team')" class="flex flex-col items-center gap-0.5 text-on-surface-variant">
+    <span class="material-symbols-outlined">group</span>
+    <span class="text-[10px]">Team</span>
+  </button>
+  {% endif %}
+</nav>
+
+<!-- ══════ CREATE PROJECT MODAL ══════ -->
+<div id="create-modal" class="hidden fixed inset-0 z-[100] modal-overlay flex items-center justify-center p-4">
+  <div class="bg-foundation-white w-full max-w-5xl max-h-[92vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+    <div class="px-6 py-4 bg-surface-container-low border-b border-outline-variant flex justify-between items-center">
+      <div class="flex items-center gap-4">
+        <img src="{{ url_for('static', filename='images/vekas-logo.jpeg') }}" alt="VEKAS Construction" class="h-20 w-72 object-contain object-left bg-white rounded-lg border border-outline-variant"/>
+        <div>
+        <h2 class="text-xl font-bold text-blueprint-blue" style="font-family:'Merriweather',serif">New Project Initiation</h2>
+        <p class="text-xs text-on-surface-variant mt-0.5">Auto project ID, customer details, project type, and built-up area calculation</p>
+        </div>
+      </div>
+      <button onclick="closeCreateModal()" class="text-outline hover:text-on-surface p-1 rounded-lg hover:bg-surface-container">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <form id="create-project-form" onsubmit="submitCreateProject(event)" class="p-6 space-y-6 overflow-y-auto" novalidate>
+      <section class="rounded-2xl border border-outline-variant bg-surface-container-low/40 p-4">
+        <h3 class="font-black text-blueprint-blue mb-4">Basic Details</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <div class="xl:col-span-3 grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="form-field">
+              <label for="cp-project-prefix">Project ID Prefix *</label>
+              <input id="cp-project-prefix" type="text" value="VKS" maxlength="12" oninput="updateProjectCodePreview()" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm uppercase"/>
+            </div>
+            <div class="form-field">
+              <label for="cp-project-year">Project Year *</label>
+              <select id="cp-project-year" onchange="updateProjectCodePreview()" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm">
+                {% for year in range(2000, 2031) %}
+                  <option value="{{ year }}" {% if year == 2026 %}selected{% endif %}>{{ year }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-field md:col-span-2">
+              <label for="cp-project-code">Generated Project ID</label>
+              <input id="cp-project-code" type="text" value="VKS-2026-001" readonly class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container text-sm text-on-surface-variant font-bold"/>
+            </div>
+          </div>
+          <div class="form-field">
+            <label for="cp-company">Company Name *</label>
+            <input id="cp-company" type="text" placeholder="Enter unique company name" required class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm"/>
+          </div>
+          <div class="form-field">
+            <label for="cp-customer">Customer Name *</label>
+            <input id="cp-customer" type="text" placeholder="Enter customer name" required class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm"/>
+          </div>
+          <div class="form-field">
+            <label for="cp-job-position">Job Position</label>
+            <select id="cp-job-position" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm">
+              <option>Owner</option><option>Architect</option><option>Engineer</option><option>Builder</option><option>Contractor</option><option>Other</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="cp-contact">Contact Number *</label>
+            <div class="phone-field">
+              <span>+91</span>
+              <input id="cp-contact" type="tel" inputmode="numeric" maxlength="10" placeholder="10 digit number" oninput="cleanPhoneInput(this);syncWhatsappIfChecked()" required/>
+            </div>
+          </div>
+          <div class="form-field">
+            <label for="cp-whatsapp">WhatsApp Number</label>
+            <div class="mb-2">
+              <label class="inline-flex items-center gap-2 text-xs text-on-surface-variant normal-case tracking-normal font-medium"><input id="cp-whatsapp-same" type="checkbox" onchange="syncWhatsappIfChecked()"> WhatsApp same as contact</label>
+            </div>
+            <div class="phone-field">
+              <span>+91</span>
+              <input id="cp-whatsapp" type="tel" inputmode="numeric" maxlength="10" placeholder="10 digit number" oninput="cleanPhoneInput(this)"/>
+            </div>
+          </div>
+          <div class="form-field">
+            <label for="cp-email">Email ID</label>
+            <input id="cp-email" type="email" placeholder="Enter email address" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm"/>
+          </div>
+        </div>
+      </section>
+
+      <section class="rounded-2xl border border-outline-variant p-4">
+        <h3 class="font-black text-blueprint-blue mb-4">Address Details</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="form-field md:col-span-2">
+            <label for="cp-address">Address</label>
+            <textarea id="cp-address" rows="2" placeholder="Enter full address" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm resize-none"></textarea>
+          </div>
+          <div class="form-field">
+            <label for="cp-city">City</label>
+            <input id="cp-city" placeholder="Enter city" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm"/>
+          </div>
+          <div class="form-field">
+            <label for="cp-district">District</label>
+            <input id="cp-district" placeholder="Enter district" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm"/>
+          </div>
+          <div class="form-field">
+            <label for="cp-state">State</label>
+            <input id="cp-state" placeholder="Enter state" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm"/>
+          </div>
+          <div class="form-field">
+            <label for="cp-country">Country</label>
+            <input id="cp-country" value="India" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm"/>
+          </div>
+        </div>
+      </section>
+
+      <section class="rounded-2xl border border-outline-variant bg-surface-container-low/40 p-4">
+        <h3 class="font-black text-blueprint-blue mb-4">Project Information</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="form-field">
+            <label for="cp-name">Project Name *</label>
+            <input id="cp-name" type="text" placeholder="Enter project name" required class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm"/>
+          </div>
+          <div class="form-field">
+            <label for="cp-project-type">Project Type</label>
+            <select id="cp-project-type" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm">
+              <option>Residential</option><option>Commercial</option><option>Villa</option><option>Apartment</option><option>Industrial</option><option>Interior</option><option>Other</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="cp-start">Start Date</label>
+            <input id="cp-start" type="date" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm"/>
+          </div>
+          <div class="form-field">
+            <label for="cp-priority">Priority</label>
+            <select id="cp-priority" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm">
+              <option>Medium</option><option>High</option><option>Low</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="cp-status">Status</label>
+            <select id="cp-status" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm">
+              <option>Planning</option><option>In Progress</option><option>Review</option><option>Completed</option><option>Delayed</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="cp-location">Project Location</label>
+            <input id="cp-location" type="text" placeholder="Enter project location" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm"/>
+          </div>
+          <div class="form-field md:col-span-2">
+            <label for="cp-desc">Notes</label>
+            <textarea id="cp-desc" rows="3" placeholder="Add project notes" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm resize-none"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="rounded-2xl border border-outline-variant p-4">
+        <div class="flex items-center justify-between gap-3 mb-4">
+          <h3 class="font-black text-blueprint-blue">Building Area Details</h3>
+          <button type="button" onclick="addFloorRow()" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blueprint-blue text-white text-sm font-bold">
+            <span class="material-symbols-outlined text-base">add</span> Add Floor
+          </button>
+        </div>
+        <div id="floor-rows" class="space-y-3"></div>
+        <div class="mt-4 rounded-xl bg-secondary-container/30 border border-secondary-container px-4 py-3 flex items-center justify-between">
+          <span class="font-bold text-on-secondary-container">Total Builtup Area</span>
+          <span class="text-2xl font-black text-blueprint-blue"><span id="cp-total-area">0</span> sqft</span>
+        </div>
+      </section>
+
+      <div id="create-error" class="hidden text-sm text-error bg-red-50 border border-red-200 px-4 py-3 rounded-xl flex items-center gap-2">
+        <span class="material-symbols-outlined text-base">error</span>
+        <span id="create-error-text"></span>
+      </div>
+      <div class="pt-2 flex gap-3">
+        <button type="button" onclick="closeCreateModal()"
+          class="flex-1 py-3 px-4 border border-outline text-on-surface-variant font-semibold text-sm rounded-xl hover:bg-surface-container transition-colors">
+          Cancel
+        </button>
+        <button type="submit" id="create-submit-btn"
+          class="flex-1 py-3 px-4 bg-blueprint-blue text-foundation-white font-bold text-sm rounded-xl hover:bg-primary transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+          <span id="create-spinner" class="material-symbols-outlined text-base hidden animate-spin">progress_activity</span>
+          Initiate Project
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════ EDIT PROJECT MODAL ══════ -->
+<div id="edit-modal" class="hidden fixed inset-0 z-[100] modal-overlay flex items-center justify-center p-4">
+  <div class="bg-foundation-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
+    <div class="px-6 py-4 bg-surface-container-low border-b border-outline-variant flex justify-between items-center">
+      <h2 class="text-lg font-bold text-blueprint-blue" style="font-family:'Merriweather',serif">Edit Project</h2>
+      <button onclick="closeEditModal()" class="text-outline hover:text-on-surface p-1">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <form id="edit-project-form" onsubmit="submitEditProject(event)" class="p-6 space-y-4">
+      <input type="hidden" id="edit-project-id"/>
+      <div>
+        <label class="block text-xs font-bold text-on-surface mb-2 uppercase tracking-wide">Project Name *</label>
+        <input id="edit-name" type="text" required
+          class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-sky-accent focus:ring-2 focus:ring-sky-accent/20 outline-none bg-surface-container-lowest text-sm"/>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-on-surface mb-2 uppercase tracking-wide">Client Name</label>
+        <input id="edit-client" type="text"
+          class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-sky-accent focus:ring-2 focus:ring-sky-accent/20 outline-none bg-surface-container-lowest text-sm"/>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-bold text-on-surface mb-2 uppercase tracking-wide">Status</label>
+          <select id="edit-status" class="w-full px-3 py-3 rounded-xl border border-outline-variant outline-none bg-surface-container-lowest text-sm">
+            <option>Planning</option><option>In Progress</option><option>Review</option><option>Completed</option><option>Delayed</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-on-surface mb-2 uppercase tracking-wide">Priority</label>
+          <select id="edit-priority" class="w-full px-3 py-3 rounded-xl border border-outline-variant outline-none bg-surface-container-lowest text-sm">
+            <option>Low</option><option>Medium</option><option>High</option>
+          </select>
+        </div>
+      </div>
+      <div class="pt-2 flex gap-3">
+        <button type="button" onclick="closeEditModal()"
+          class="flex-1 py-3 border border-outline text-on-surface-variant font-semibold text-sm rounded-xl hover:bg-surface-container">Cancel</button>
+        <button type="submit"
+          class="flex-1 py-3 bg-blueprint-blue text-white font-bold text-sm rounded-xl hover:bg-primary active:scale-[0.98] transition-all">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// ── User menu ──
+function toggleUserMenu() {
+  document.getElementById('user-menu').classList.toggle('hidden');
+}
+document.addEventListener('click', e => {
+  if (!document.getElementById('user-menu-wrapper').contains(e.target))
+    document.getElementById('user-menu').classList.add('hidden');
+});
+
+// ── Card dropdown menus ──
+function toggleCardMenu(id) {
+  document.querySelectorAll('[id^="card-menu-"]').forEach(m => {
+    if (m.id !== `card-menu-${id}`) m.classList.add('hidden');
+  });
+  document.getElementById(`card-menu-${id}`).classList.toggle('hidden');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('[onclick^="toggleCardMenu"]'))
+    document.querySelectorAll('[id^="card-menu-"]').forEach(m => m.classList.add('hidden'));
+});
+
+// ── Search & filter ──
+let activeTeamDays = 'all';
+
+function showDashboardView(view) {
+  if (view === 'team' && !document.getElementById('team-section')) {
+    view = 'overview';
+  }
+  const isTeam = view === 'team';
+  document.getElementById('overview-section').classList.toggle('hidden', isTeam);
+  document.getElementById('team-section')?.classList.toggle('hidden', !isTeam);
+
+  document.getElementById('overview-nav')?.classList.toggle('nav-pill-active', !isTeam);
+  document.getElementById('overview-nav')?.classList.toggle('nav-pill-muted', isTeam);
+  document.getElementById('team-nav')?.classList.toggle('nav-pill-active', isTeam);
+  document.getElementById('team-nav')?.classList.toggle('nav-pill-muted', !isTeam);
+
+  document.getElementById('overview-mobile-nav')?.classList.toggle('text-primary', !isTeam);
+  document.getElementById('overview-mobile-nav')?.classList.toggle('text-on-surface-variant', isTeam);
+  document.getElementById('team-mobile-nav')?.classList.toggle('text-primary', isTeam);
+  document.getElementById('team-mobile-nav')?.classList.toggle('text-on-surface-variant', !isTeam);
+
+  if (isTeam) filterTeam();
+  history.replaceState(null, '', isTeam ? '#team' : '#overview');
+}
+
+function setTeamDays(days, btn) {
+  activeTeamDays = days;
+  document.querySelectorAll('.team-day-filter').forEach(b => {
+    b.classList.remove('bg-blueprint-blue', 'text-white', 'shadow-sm');
+    b.classList.add('bg-foundation-white', 'border', 'border-outline-variant', 'text-on-surface-variant');
+  });
+  btn.classList.add('bg-blueprint-blue', 'text-white', 'shadow-sm');
+  btn.classList.remove('bg-foundation-white', 'border', 'border-outline-variant', 'text-on-surface-variant');
+  filterTeam();
+}
+
+function filterTeam() {
+  const q = (document.getElementById('team-search-input')?.value || '').toLowerCase().trim();
+  const maxDaysByRange = { all: Infinity, today: 0, week: 7, month: 30 };
+  const maxDays = maxDaysByRange[activeTeamDays] ?? Infinity;
+  const cards = document.querySelectorAll('.team-card');
+  let visible = 0;
+
+  cards.forEach(card => {
+    const nameMatch = !q || card.dataset.name.includes(q);
+    const days = Number(card.dataset.days || 99999);
+    const dayMatch = activeTeamDays === 'all' || days <= maxDays;
+    const show = nameMatch && dayMatch;
+    const metricKey = activeTeamDays === 'all' ? 'all' : activeTeamDays;
+    card.querySelector('.team-usage-value').textContent = card.dataset[`usage${metricKey.charAt(0).toUpperCase() + metricKey.slice(1)}`] || 'No activity yet';
+    card.querySelector('.team-projects-value').textContent = card.dataset[`projects${metricKey.charAt(0).toUpperCase() + metricKey.slice(1)}`] || '0';
+    card.querySelector('.team-files-value').textContent = card.dataset[`files${metricKey.charAt(0).toUpperCase() + metricKey.slice(1)}`] || '0';
+    card.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+
+  document.getElementById('team-no-results').classList.toggle('hidden', visible > 0);
+}
+
+function filterProjects() {
+  const q  = (document.getElementById('search-input')?.value || '').toLowerCase();
+  const client = document.getElementById('client-filter')?.value || '';
+  const st = document.getElementById('status-filter').value;
+  const city = document.getElementById('city-filter')?.value || '';
+  const state = document.getElementById('state-filter')?.value || '';
+  const district = document.getElementById('district-filter')?.value || '';
+  const day = document.getElementById('day-filter')?.value || '';
+  const exactDate = document.getElementById('exact-date-filter')?.value || '';
+  const cards = document.querySelectorAll('.project-card');
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  let visible = 0;
+  cards.forEach(c => {
+    const createdDate = c.dataset.createdDate || '';
+    const created = createdDate ? new Date(`${createdDate}T00:00:00`) : null;
+    const nameMatch   = !q  || c.dataset.name.includes(q) || (c.dataset.client || '').includes(q);
+    const clientMatch = !client || c.dataset.client === client;
+    const statusMatch = !st || c.dataset.status === st;
+    const cityMatch = !city || c.dataset.city === city;
+    const stateMatch = !state || c.dataset.state === state;
+    const districtMatch = !district || c.dataset.district === district;
+    let dayMatch = true;
+
+    if (exactDate) {
+      dayMatch = createdDate === exactDate;
+    } else if (day && created) {
+      const diffDays = Math.floor((today - created) / 86400000);
+      dayMatch =
+        (day === 'today' && diffDays === 0) ||
+        (day === 'week' && diffDays >= 0 && diffDays <= 6) ||
+        (day === 'month' && diffDays >= 0 && diffDays <= 29);
+    } else if (day) {
+      dayMatch = false;
+    }
+
+    const show = nameMatch && clientMatch && statusMatch && cityMatch && stateMatch && districtMatch && dayMatch;
+    c.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  document.getElementById('no-results').classList.toggle('hidden', visible > 0);
+}
+
+// ── Create modal ──
+function setProjectView(view) {
+  const grid = document.getElementById('project-grid');
+  const gridBtn = document.getElementById('grid-view-btn');
+  const listBtn = document.getElementById('list-view-btn');
+  if (!grid || !gridBtn || !listBtn) return;
+
+  const isList = view === 'list';
+  grid.classList.toggle('list-view', isList);
+  grid.classList.toggle('grid', !isList);
+  grid.classList.toggle('md:grid-cols-2', !isList);
+  grid.classList.toggle('xl:grid-cols-3', !isList);
+  gridBtn.className = `${isList ? 'view-toggle-muted' : 'view-toggle-active'} px-3 py-2.5 transition-colors`;
+  listBtn.className = `${isList ? 'view-toggle-active' : 'view-toggle-muted'} px-3 py-2.5 border-l border-outline-variant transition-colors`;
+  localStorage.setItem('projectViewMode', view);
+}
+
+setProjectView(localStorage.getItem('projectViewMode') || 'grid');
+
+if (window.location.hash === '#team') showDashboardView('team');
+
+function syncWhatsappIfChecked() {
+  if (document.getElementById('cp-whatsapp-same')?.checked) {
+    document.getElementById('cp-whatsapp').value = document.getElementById('cp-contact').value;
+  }
+}
+
+function cleanPhoneInput(input) {
+  input.value = input.value.replace(/\D/g, '').slice(0, 10);
+}
+
+let projectCodeTimer;
+async function updateProjectCodePreview() {
+  const prefixInput = document.getElementById('cp-project-prefix');
+  const yearInput = document.getElementById('cp-project-year');
+  const codeInput = document.getElementById('cp-project-code');
+  if (!prefixInput || !yearInput || !codeInput) return;
+  prefixInput.value = prefixInput.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 12);
+  const prefix = prefixInput.value;
+  const year = yearInput.value;
+  if (!prefix) {
+    codeInput.value = `${year}-001`;
+    return;
+  }
+  codeInput.value = `${prefix}-${year}-...`;
+  clearTimeout(projectCodeTimer);
+  projectCodeTimer = setTimeout(async () => {
+    try {
+      const res = await fetch(`/api/project/next-code?prefix=${encodeURIComponent(prefix)}&year=${encodeURIComponent(year)}`);
+      const data = await res.json();
+      codeInput.value = data.success ? data.projectCode : `${prefix}-${year}-001`;
+    } catch (_) {
+      codeInput.value = `${prefix}-${year}-001`;
+    }
+  }, 250);
+}
+
+function addFloorRow(data = {}) {
+  const row = document.createElement('div');
+  row.className = 'floor-row grid grid-cols-1 md:grid-cols-6 gap-3 rounded-xl bg-surface-container-low p-3 border border-outline-variant';
+  row.innerHTML = `
+    <div class="form-field md:col-span-2"><label>Floor Name</label><input class="floor-name w-full px-3 py-2 rounded-lg border border-outline-variant text-sm" placeholder="Stilt Floor / First Floor" value="${data.floor || ''}"></div>
+    <div class="form-field"><label>Length</label><input class="floor-length w-full px-3 py-2 rounded-lg border border-outline-variant text-sm" type="number" min="0" step="0.01" placeholder="L" value="${data.length || ''}" oninput="calculateFloorAreas()"></div>
+    <div class="form-field"><label>Breadth</label><input class="floor-breadth w-full px-3 py-2 rounded-lg border border-outline-variant text-sm" type="number" min="0" step="0.01" placeholder="B" value="${data.breadth || ''}" oninput="calculateFloorAreas()"></div>
+    <div class="form-field"><label>Manual Sqft</label><input class="floor-manual w-full px-3 py-2 rounded-lg border border-outline-variant text-sm" type="number" min="0" step="0.01" placeholder="Sqft" value="${data.manual || ''}" oninput="calculateFloorAreas()"></div>
+    <div class="flex items-end gap-2"><span class="floor-area flex-1 text-sm font-black text-blueprint-blue pb-2">0 sqft</span><button type="button" onclick="this.closest('.floor-row').remove();calculateFloorAreas()" class="p-2 rounded-lg text-error hover:bg-red-50"><span class="material-symbols-outlined text-base">delete</span></button></div>
+  `;
+  document.getElementById('floor-rows').appendChild(row);
+  calculateFloorAreas();
+}
+
+function calculateFloorAreas() {
+  let total = 0;
+  document.querySelectorAll('.floor-row').forEach(row => {
+    const length = parseFloat(row.querySelector('.floor-length').value) || 0;
+    const breadth = parseFloat(row.querySelector('.floor-breadth').value) || 0;
+    const manual = parseFloat(row.querySelector('.floor-manual').value) || 0;
+    const area = manual || (length * breadth);
+    row.querySelector('.floor-area').textContent = `${area.toFixed(2)} sqft`;
+    total += area;
+  });
+  document.getElementById('cp-total-area').textContent = total.toFixed(2);
+  return total;
+}
+
+function collectFloorRows() {
+  return Array.from(document.querySelectorAll('.floor-row')).map(row => {
+    const length = parseFloat(row.querySelector('.floor-length').value) || 0;
+    const breadth = parseFloat(row.querySelector('.floor-breadth').value) || 0;
+    const manual = parseFloat(row.querySelector('.floor-manual').value) || 0;
+    return { floor: row.querySelector('.floor-name').value.trim(), length, breadth, manual_qty: manual, area: manual || (length * breadth) };
+  }).filter(f => f.floor || f.length || f.breadth || f.manual_qty);
+}
+
+function openCreateModal() {
+  document.getElementById('create-modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  updateProjectCodePreview();
+  if (!document.querySelector('.floor-row')) addFloorRow({ floor: 'Stilt Floor' });
+}
+function closeCreateModal() {
+  document.getElementById('create-modal').classList.add('hidden');
+  document.body.style.overflow = '';
+  document.getElementById('create-project-form').reset();
+  document.getElementById('cp-project-prefix').value = 'VKS';
+  document.getElementById('cp-project-year').value = '2026';
+  document.getElementById('cp-project-code').value = 'VKS-2026-001';
+  document.getElementById('floor-rows').innerHTML = '';
+  document.getElementById('cp-total-area').textContent = '0';
+  document.getElementById('create-error').classList.add('hidden');
+}
+async function submitCreateProject(e) {
+  e.preventDefault();
+  const btn  = document.getElementById('create-submit-btn');
+  const sp   = document.getElementById('create-spinner');
+  const err  = document.getElementById('create-error');
+  btn.disabled = true; sp.classList.remove('hidden');
+  err.classList.add('hidden');
+  const requiredMissing = [
+    ['cp-project-prefix', 'Project ID prefix is required.'],
+    ['cp-company', 'Company name is required.'],
+    ['cp-customer', 'Customer name is required.'],
+    ['cp-contact', 'Contact number is required.'],
+    ['cp-name', 'Project name is required.']
+  ].find(([id]) => !document.getElementById(id).value.trim());
+  if (requiredMissing) {
+    document.getElementById('create-error-text').textContent = requiredMissing[1];
+    err.classList.remove('hidden');
+    btn.disabled = false; sp.classList.add('hidden');
+    return;
+  }
+  if (document.getElementById('cp-contact').value.length !== 10) {
+    document.getElementById('create-error-text').textContent = 'Contact number must be 10 digits.';
+    err.classList.remove('hidden');
+    btn.disabled = false; sp.classList.add('hidden');
+    return;
+  }
+  try {
+    const res = await fetch("{{ url_for('create_project') }}", {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        projectPrefix: document.getElementById('cp-project-prefix').value,
+        projectYear: document.getElementById('cp-project-year').value,
+        projectName: document.getElementById('cp-name').value,
+        companyName: document.getElementById('cp-company').value,
+        customerName: document.getElementById('cp-customer').value,
+        jobPosition: document.getElementById('cp-job-position').value,
+        contactNumber: document.getElementById('cp-contact').value,
+        whatsappNumber: document.getElementById('cp-whatsapp').value,
+        emailId: document.getElementById('cp-email').value,
+        address: document.getElementById('cp-address').value,
+        city: document.getElementById('cp-city').value,
+        district: document.getElementById('cp-district').value,
+        state: document.getElementById('cp-state').value,
+        country: document.getElementById('cp-country').value,
+        projectType: document.getElementById('cp-project-type').value,
+        projectLocation: document.getElementById('cp-location').value,
+        buildingAreaDetails: collectFloorRows(),
+        totalBuiltupArea: calculateFloorAreas(),
+        description: document.getElementById('cp-desc').value,
+        startDate:   document.getElementById('cp-start').value,
+        priority:    document.getElementById('cp-priority').value,
+        status:      document.getElementById('cp-status').value,
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      window.location.href = data.redirect;
+    } else if (res.status === 401 && data.redirect) {
+      window.location.href = data.redirect;
+    } else {
+      document.getElementById('create-error-text').textContent = data.error;
+      err.classList.remove('hidden');
+      btn.disabled = false; sp.classList.add('hidden');
+    }
+  } catch(ex) {
+    document.getElementById('create-error-text').textContent = 'Network error. Try again.';
+    err.classList.remove('hidden');
+    btn.disabled = false; sp.classList.add('hidden');
+  }
+}
+// Close modal on outside click
+document.getElementById('create-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('create-modal')) closeCreateModal();
+});
+
+// ── Edit modal ──
+function openEditModal(id, name, client, status, priority) {
+  document.getElementById('edit-project-id').value  = id;
+  document.getElementById('edit-name').value         = name;
+  document.getElementById('edit-client').value       = client;
+  document.getElementById('edit-status').value       = status;
+  document.getElementById('edit-priority').value     = priority;
+  document.getElementById('edit-modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  // close card dropdown
+  document.querySelectorAll('[id^="card-menu-"]').forEach(m => m.classList.add('hidden'));
+}
+function closeEditModal() {
+  document.getElementById('edit-modal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+async function submitEditProject(e) {
+  e.preventDefault();
+  const id = document.getElementById('edit-project-id').value;
+  const res = await fetch(`/project/${id}/update`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      name:        document.getElementById('edit-name').value,
+      client_name: document.getElementById('edit-client').value,
+      status:      document.getElementById('edit-status').value,
+      priority:    document.getElementById('edit-priority').value,
+    })
+  });
+  const data = await res.json();
+  if (data.success) { window.location.reload(); }
+  else { alert('Error: ' + data.error); }
+}
+document.getElementById('edit-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('edit-modal')) closeEditModal();
+});
+
+// ── Delete project ──
+function confirmDeleteProject(id, name) {
+  document.querySelectorAll('[id^="card-menu-"]').forEach(m => m.classList.add('hidden'));
+  if (!confirm(`Delete project "${name}"? This will permanently remove all files. This cannot be undone.`)) return;
+  fetch(`/project/${id}/delete`, { method: 'POST' })
+    .then(r => r.json())
+    .then(d => { if (d.success) window.location.reload(); else alert(d.error); });
+}
+
+// ── Flash auto-hide ──
+setTimeout(() => {
+  document.querySelectorAll('.flash-msg').forEach(el => {
+    el.style.transition = 'all .4s ease';
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(100%)';
+    setTimeout(() => el.remove(), 400);
+  });
+}, 5000);
+</script>
+</body>
+</html>

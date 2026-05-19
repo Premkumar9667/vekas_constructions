@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+instance/
+venv/
+.venv/
+static/uploads/
+.env
+*.log

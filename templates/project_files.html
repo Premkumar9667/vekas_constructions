@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>{{ project.name }} — Files | VEKAS Construction</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>
+tailwind.config={theme:{extend:{colors:{
+  "blueprint-blue":"#1E6C93","sky-accent":"#49AAD4","structure-dark":"#212121",
+  "foundation-white":"#FFFFFF","surface":"#fcf9f8","background":"#fcf9f8",
+  "on-surface":"#1b1c1c","on-surface-variant":"#40484e","outline":"#70787f",
+  "outline-variant":"#c0c7cf","surface-container-low":"#f6f3f2",
+  "surface-container":"#f0eded","surface-container-high":"#eae7e7",
+  "surface-container-lowest":"#ffffff","surface-container-highest":"#e5e2e1",
+  "secondary-container":"#75d1fd","on-secondary-container":"#005976",
+  "primary":"#005375","primary-container":"#1e6c93","on-primary":"#ffffff",
+  "error":"#ba1a1a","secondary":"#006686"
+}}}}
+</script>
+<style>
+  .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+  body{font-family:'Hanken Grotesk',sans-serif;background:#fcf9f8}
+  .modal-overlay{background:rgba(33,33,33,.45);backdrop-filter:blur(5px)}
+  .file-card{transition:transform .2s ease,box-shadow .2s ease}
+  .file-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(33,33,33,.1)}
+  .tab-btn.active{border-bottom:2px solid #1E6C93;color:#1E6C93;font-weight:700}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .spin{animation:spin 1s linear infinite}
+  ::-webkit-scrollbar{width:5px} ::-webkit-scrollbar-thumb{background:#c0c7cf;border-radius:10px}
+</style>
+</head>
+<body class="bg-background text-on-surface min-h-screen">
+
+<!-- Flash messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div id="flash-container" class="fixed top-4 right-4 z-[200] space-y-2 max-w-sm">
+      {% for cat, msg in messages %}
+        <div class="flash-msg flex items-start gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium
+          {% if cat=='success' %}bg-green-50 border border-green-200 text-green-800
+          {% elif cat=='error' %}bg-red-50 border border-red-200 text-red-800
+          {% else %}bg-blue-50 border border-blue-200 text-blue-800{% endif %}">
+          <span class="material-symbols-outlined text-base mt-0.5">
+            {% if cat=='success' %}check_circle{% elif cat=='error' %}error{% else %}info{% endif %}
+          </span>
+          <span>{{ msg }}</span>
+          <button onclick="this.parentElement.remove()" class="ml-auto opacity-60 hover:opacity-100">
+            <span class="material-symbols-outlined text-sm">close</span>
+          </button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<!-- Top Header -->
+<header class="border-b border-outline-variant/70 bg-foundation-white/90 backdrop-blur-md sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+    <div class="flex items-center gap-5">
+      <a href="{{ url_for('dashboard') }}" class="flex items-center gap-2">
+        <span class="text-xl font-bold text-blueprint-blue tracking-tight" style="font-family:'Merriweather',serif">VEKAS</span>
+        <span class="text-xs font-bold tracking-[.2em] text-outline uppercase mt-1 hidden sm:block">Construction</span>
+      </a>
+      <div class="h-6 w-px bg-outline-variant hidden sm:block"></div>
+      <nav class="hidden md:flex items-center gap-1 text-sm font-medium">
+        <a href="{{ url_for('dashboard') }}" class="px-3 py-2 text-on-surface-variant hover:text-blueprint-blue transition-colors">Dashboard</a>
+        <a href="{{ url_for('project_detail', project_id=project.id) }}" class="px-3 py-2 text-blueprint-blue border-b-2 border-blueprint-blue">Projects</a>
+        <a href="#" class="px-3 py-2 text-on-surface-variant hover:text-blueprint-blue transition-colors">Team</a>
+      </nav>
+    </div>
+    <div class="flex items-center gap-3">
+      <button onclick="document.documentElement.classList.toggle('dark')"
+        class="p-2 rounded-full hover:bg-surface-container text-on-surface-variant transition-colors">
+        <span class="material-symbols-outlined">dark_mode</span>
+      </button>
+      <a href="{{ url_for('logout') }}"
+        class="w-8 h-8 rounded-full bg-blueprint-blue flex items-center justify-center text-white text-xs font-bold hover:opacity-80 transition-opacity">
+        {{ current_user.name[:2].upper() }}
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- Breadcrumb -->
+<div class="max-w-7xl mx-auto px-6 py-4">
+  <nav class="flex items-center gap-2 text-sm text-on-surface-variant">
+    <a href="{{ url_for('dashboard') }}" class="hover:text-blueprint-blue flex items-center gap-1 transition-colors">
+      <span class="material-symbols-outlined text-sm">home</span> Projects
+    </a>
+    <span class="material-symbols-outlined text-sm">chevron_right</span>
+    <a href="{{ url_for('project_detail', project_id=project.id) }}" class="hover:text-blueprint-blue transition-colors">{{ project.name }}</a>
+    <span class="material-symbols-outlined text-sm">chevron_right</span>
+    <span class="text-on-surface font-semibold">Files</span>
+  </nav>
+</div>
+
+<!-- Main layout -->
+<main class="max-w-7xl mx-auto px-6 pb-16">
+  <div class="flex flex-col lg:flex-row gap-8">
+
+    <!-- ── Left: File manager ── -->
+    <div class="flex-1 min-w-0">
+
+      <!-- Project title & actions -->
+      <div class="flex items-start justify-between gap-4 mb-5">
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight text-on-surface" style="font-family:'Merriweather',serif">
+            {{ project.name }}
+          </h1>
+          {% if project.description %}
+            <p class="text-on-surface-variant text-sm mt-1 leading-relaxed max-w-xl line-clamp-2">{{ project.description }}</p>
+          {% endif %}
+        </div>
+        <div class="flex gap-2 shrink-0">
+          <button class="p-2 rounded-lg border border-outline-variant hover:bg-surface-container transition-colors">
+            <span class="material-symbols-outlined text-on-surface-variant">more_horiz</span>
+          </button>
+          <button class="p-2 rounded-lg border border-outline-variant hover:bg-surface-container transition-colors">
+            <span class="material-symbols-outlined text-on-surface-variant">push_pin</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Folder Tabs -->
+      <div class="flex border-b border-outline-variant/50 mb-8">
+        <a href="{{ url_for('project_files', project_id=project.id, folder='Drawing') }}"
+           class="tab-btn px-6 py-3 text-sm flex items-center gap-2 transition-all {% if current_folder=='Drawing' %}active{% else %}text-on-surface-variant hover:text-on-surface{% endif %}">
+          <span class="material-symbols-outlined text-sm">architecture</span> Drawing
+        </a>
+        <a href="{{ url_for('project_files', project_id=project.id, folder='Output') }}"
+           class="tab-btn px-6 py-3 text-sm flex items-center gap-2 transition-all {% if current_folder=='Output' %}active{% else %}text-on-surface-variant hover:text-on-surface{% endif %}">
+          <span class="material-symbols-outlined text-sm">assignment_turned_in</span> Output
+        </a>
+      </div>
+
+      <!-- Folder header & upload button -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <h2 class="text-base font-bold text-on-surface">Folder: {{ current_folder }}</h2>
+          <p class="text-xs text-outline">Manage your architectural and structural documents</p>
+        </div>
+        <div class="flex gap-3">
+          <!-- Search within folder -->
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
+            <input type="text" placeholder="Search files…" oninput="filterFiles(this.value)"
+              class="pl-9 pr-4 py-2.5 bg-surface-container border border-outline-variant rounded-lg text-sm outline-none focus:ring-2 focus:ring-sky-accent w-44"/>
+          </div>
+          <button onclick="openUploadModal()"
+            class="bg-blueprint-blue hover:opacity-90 text-white px-4 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 transition-opacity shadow-sm">
+            <span class="material-symbols-outlined text-sm">cloud_upload</span> Multi-file Upload
+          </button>
+        </div>
+      </div>
+
+      <!-- File Grid -->
+      {% if files %}
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" id="file-grid">
+          {% for f in files %}
+          <div class="file-card group relative bg-foundation-white border border-outline-variant/50 rounded-xl hover:border-blueprint-blue/40 overflow-hidden"
+               data-name="{{ f.original_name|lower }}">
+            {% if f.file_type in ['jpg','jpeg','png','gif','webp'] %}
+              <!-- Image preview -->
+              <div class="aspect-video bg-surface-container relative overflow-hidden">
+                <img src="{{ url_for('download_file', project_id=project.id, file_id=f.id) }}"
+                     alt="{{ f.original_name }}"
+                     class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"/>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                <div class="absolute bottom-2 left-3 right-8">
+                  <span class="text-white text-xs font-medium truncate block">{{ f.original_name }}</span>
+                </div>
+                <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                  <a href="{{ url_for('download_file', project_id=project.id, file_id=f.id) }}"
+                     class="w-7 h-7 rounded-lg bg-white/20 backdrop-blur flex items-center justify-center text-white hover:bg-white hover:text-blueprint-blue transition-all">
+                    <span class="material-symbols-outlined text-sm">download</span>
+                  </a>
+                  <button onclick="deleteFile({{ f.id }})"
+                    class="w-7 h-7 rounded-lg bg-white/20 backdrop-blur flex items-center justify-center text-white hover:bg-red-500 transition-all">
+                    <span class="material-symbols-outlined text-sm">delete</span>
+                  </button>
+                </div>
+              </div>
+              <div class="p-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-on-surface-variant bg-surface-container px-1.5 py-0.5 rounded uppercase">
+                      {{ f.file_type }}
+                    </span>
+                    <span class="text-xs text-outline">{{ f.size_display }}</span>
+                  </div>
+                  <span class="text-xs text-outline">{{ f.time_ago }}</span>
+                </div>
+              </div>
+            {% else %}
+              <!-- Document card -->
+              <div class="p-4">
+                <div class="flex items-start justify-between mb-3">
+                  <div class="w-12 h-12 {{ f.icon_bg }} rounded-lg flex items-center justify-center {{ f.icon_text }}">
+                    <span class="material-symbols-outlined text-2xl">{{ f.icon }}</span>
+                  </div>
+                  <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <a href="{{ url_for('download_file', project_id=project.id, file_id=f.id) }}"
+                       class="p-1.5 text-outline hover:text-blueprint-blue transition-colors rounded-lg hover:bg-surface-container" title="Download">
+                      <span class="material-symbols-outlined text-base">download</span>
+                    </a>
+                    <button onclick="deleteFile({{ f.id }})"
+                      class="p-1.5 text-outline hover:text-error transition-colors rounded-lg hover:bg-red-50" title="Delete">
+                      <span class="material-symbols-outlined text-base">delete</span>
+                    </button>
+                  </div>
+                </div>
+                <h3 class="font-semibold text-on-surface text-sm truncate mb-1">{{ f.original_name }}</h3>
+                <div class="flex items-center gap-2 mb-1.5">
+                  <span class="text-xs font-bold text-on-surface-variant bg-surface-container px-1.5 py-0.5 rounded uppercase">
+                    {{ f.file_type or '—' }}
+                  </span>
+                  <span class="text-xs text-outline">{{ f.size_display }}</span>
+                </div>
+                <div class="flex items-center justify-between mt-2 pt-2 border-t border-outline-variant/20">
+                  <span class="text-xs text-outline flex items-center gap-1">
+                    <span class="material-symbols-outlined text-xs">schedule</span>{{ f.time_ago }}
+                  </span>
+                  {% if f.uploader_name %}
+                  <span class="text-xs text-outline flex items-center gap-1">
+                    <span class="material-symbols-outlined text-xs">person</span>{{ f.uploader_name.split()[0] }}
+                  </span>
+                  {% endif %}
+                </div>
+              </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        <div id="no-files-results" class="hidden text-center py-10 text-outline text-sm">
+          <span class="material-symbols-outlined text-4xl block mb-2 opacity-30">search_off</span>
+          No files match your search.
+        </div>
+      {% else %}
+        <!-- Empty state -->
+        <div class="text-center py-20 border-2 border-dashed border-outline-variant/30 rounded-2xl">
+          <span class="material-symbols-outlined text-6xl text-outline/30 mb-4 block">folder_open</span>
+          <h3 class="text-xl font-bold text-on-surface-variant mb-2" style="font-family:'Merriweather',serif">
+            No files in {{ current_folder }}
+          </h3>
+          <p class="text-outline text-sm mb-6">Upload your first file to get started.</p>
+          <button onclick="openUploadModal()"
+            class="inline-flex items-center gap-2 bg-blueprint-blue text-white px-6 py-3 rounded-lg font-bold hover:shadow-lg transition-all">
+            <span class="material-symbols-outlined">cloud_upload</span> Upload Files
+          </button>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- ── Right sidebar ── -->
+    <aside class="w-full lg:w-80 space-y-6 shrink-0">
+
+      <!-- Project Stats -->
+      <div class="bg-foundation-white border border-outline-variant rounded-xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h4 class="font-bold text-on-surface">Project Stats</h4>
+          <span class="text-xs bg-surface-container px-2 py-1 rounded text-outline uppercase font-bold tracking-wider">Live</span>
+        </div>
+        <div class="space-y-4">
+          <div>
+            <div class="flex items-center justify-between text-xs mb-1">
+              <span class="text-outline">Storage Used</span>
+              <span class="text-on-surface font-semibold">{{ capacity_pct }}%</span>
+            </div>
+            <div class="w-full h-2 bg-surface-container rounded-full overflow-hidden">
+              <div class="bg-blueprint-blue h-full rounded-full" style="width:{{ capacity_pct }}%"></div>
+            </div>
+            <p class="text-xs text-outline mt-1">{{ storage_display }} of 1 GB</p>
+          </div>
+          <div class="pt-4 border-t border-outline-variant/30 flex justify-between items-center text-sm">
+            <span class="text-outline">Total Files</span>
+            <span class="font-bold text-on-surface">{{ stats.c }}</span>
+          </div>
+          <div class="flex justify-between items-center text-sm">
+            <span class="text-outline">Status</span>
+            <span class="font-semibold text-on-surface">{{ project.status }}</span>
+          </div>
+          {% if project.client_name %}
+          <div class="flex justify-between items-center text-sm">
+            <span class="text-outline">Client</span>
+            <span class="font-semibold text-on-surface truncate ml-4">{{ project.client_name }}</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="bg-foundation-white border border-outline-variant rounded-xl p-5">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-blueprint-blue text-sm">info</span>
+            <h4 class="font-bold text-on-surface">Notes</h4>
+          </div>
+          <button onclick="toggleNoteEdit()" id="note-edit-btn"
+            class="text-outline hover:text-blueprint-blue transition-colors">
+            <span class="material-symbols-outlined text-sm">edit</span>
+          </button>
+        </div>
+        <p id="note-display" class="text-xs text-on-surface-variant leading-relaxed italic {% if not note_text %}text-outline{% endif %}">
+          {{ note_text if note_text else 'No notes yet. Click the edit button to add.' }}
+        </p>
+        <div id="note-edit-area" class="hidden">
+          <textarea id="note-textarea" rows="5" placeholder="Add project notes, instructions, or reminders…"
+            class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-3 text-sm text-on-surface resize-none outline-none focus:ring-2 focus:ring-sky-accent/40">{{ note_text }}</textarea>
+          <div class="flex gap-2 mt-2">
+            <button onclick="cancelNoteEdit()" class="flex-1 py-2 border border-outline text-on-surface-variant text-xs rounded-lg hover:bg-surface-container">Cancel</button>
+            <button onclick="saveNotes()" class="flex-1 py-2 bg-blueprint-blue text-white text-xs font-bold rounded-lg hover:opacity-90">Save</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Team Members -->
+      {% if members %}
+      <div class="bg-foundation-white border border-outline-variant rounded-xl p-5">
+        <h4 class="font-bold text-on-surface mb-4">Active Collaborators</h4>
+        <div class="space-y-3">
+          {% for m in members %}
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-blueprint-blue flex items-center justify-center text-white text-xs font-bold shrink-0">
+              {{ m.name[:2].upper() }}
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-on-surface">{{ m.name }}</p>
+              <p class="text-xs text-outline">{{ m.member_role }}</p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Quick Links -->
+      <div class="bg-foundation-white border border-outline-variant rounded-xl p-5">
+        <h4 class="font-bold text-on-surface mb-4">Quick Actions</h4>
+        <div class="space-y-2">
+          <a href="{{ url_for('project_detail', project_id=project.id) }}"
+             class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-surface-container transition-colors text-sm text-on-surface">
+            <span class="material-symbols-outlined text-sm text-blueprint-blue">architecture</span> Project Overview
+          </a>
+          <button onclick="openUploadModal()"
+            class="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-surface-container transition-colors text-sm text-on-surface text-left">
+            <span class="material-symbols-outlined text-sm text-blueprint-blue">cloud_upload</span> Upload Files
+          </button>
+          <a href="{{ url_for('dashboard') }}"
+             class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-surface-container transition-colors text-sm text-on-surface">
+            <span class="material-symbols-outlined text-sm text-blueprint-blue">dashboard</span> Back to Dashboard
+          </a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<!-- ════════════════ UPLOAD MODAL ════════════════ -->
+<div id="upload-modal" class="hidden fixed inset-0 z-[100] modal-overlay flex items-center justify-center p-4">
+  <div class="bg-foundation-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden">
+    <div class="px-6 py-4 bg-surface-container-low border-b border-outline-variant flex justify-between items-center">
+      <div>
+        <h2 class="font-bold text-blueprint-blue text-lg" style="font-family:'Merriweather',serif">Upload Files</h2>
+        <p class="text-xs text-outline mt-0.5">Folder: <strong>{{ current_folder }}</strong></p>
+      </div>
+      <button onclick="closeUploadModal()" class="text-outline hover:text-on-surface p-1">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="p-6">
+      <!-- Drop zone -->
+      <div id="upload-drop"
+           class="border-2 border-dashed border-outline-variant/60 rounded-xl p-8 text-center cursor-pointer hover:border-blueprint-blue/50 transition-all"
+           onclick="document.getElementById('file-input').click()"
+           ondragover="event.preventDefault(); this.classList.add('border-blueprint-blue','bg-blueprint-blue/5')"
+           ondragleave="this.classList.remove('border-blueprint-blue','bg-blueprint-blue/5')"
+           ondrop="handleUploadDrop(event)">
+        <span class="material-symbols-outlined text-5xl text-outline/40 mb-2 block">upload_file</span>
+        <p class="text-sm font-semibold text-on-surface mb-1">Click or drag files here</p>
+        <p class="text-xs text-outline">PDF, DWG, DOCX, XLSX, PNG, JPG — max 100 MB each</p>
+      </div>
+      <input type="file" id="file-input" multiple class="hidden" onchange="handleFileSelect(this.files)"/>
+
+      <!-- Selected files -->
+      <div id="selected-files" class="mt-4 space-y-2 max-h-48 overflow-y-auto"></div>
+
+      <!-- Progress -->
+      <div id="upload-progress-wrap" class="mt-4 hidden">
+        <div class="flex justify-between text-xs text-outline mb-1">
+          <span id="upload-progress-label">Uploading…</span>
+          <span id="upload-progress-pct">0%</span>
+        </div>
+        <div class="w-full h-2 bg-outline-variant/20 rounded-full overflow-hidden">
+          <div id="upload-progress-bar" class="h-full bg-blueprint-blue rounded-full transition-all" style="width:0%"></div>
+        </div>
+      </div>
+
+      <div id="upload-error" class="mt-3 hidden text-sm text-error bg-red-50 border border-red-200 px-4 py-2 rounded-xl flex items-center gap-2">
+        <span class="material-symbols-outlined text-base">error</span>
+        <span id="upload-error-text"></span>
+      </div>
+
+      <div class="mt-5 flex gap-3">
+        <button onclick="closeUploadModal()"
+          class="flex-1 py-3 border border-outline text-on-surface-variant font-semibold text-sm rounded-xl hover:bg-surface-container">Cancel</button>
+        <button onclick="submitUpload()" id="upload-btn"
+          class="flex-1 py-3 bg-blueprint-blue text-white font-bold text-sm rounded-xl hover:bg-primary transition-all flex items-center justify-center gap-2">
+          <span id="upload-btn-spinner" class="material-symbols-outlined text-sm hidden spin">progress_activity</span>
+          Upload Files
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="mt-16 border-t border-outline-variant/50 py-10 bg-surface-container-low">
+  <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div class="flex items-start gap-3">
+      <span class="material-symbols-outlined text-blueprint-blue">verified</span>
+      <div><h5 class="font-bold text-sm">Trusted & Reliable</h5><p class="text-xs text-outline">Building trust through quality</p></div>
+    </div>
+    <div class="flex items-start gap-3">
+      <span class="material-symbols-outlined text-blueprint-blue">schedule</span>
+      <div><h5 class="font-bold text-sm">On-Time Delivery</h5><p class="text-xs text-outline">We value your commitments</p></div>
+    </div>
+    <div class="flex items-start gap-3">
+      <span class="material-symbols-outlined text-blueprint-blue">support_agent</span>
+      <div><h5 class="font-bold text-sm">Dedicated Support</h5><p class="text-xs text-outline">Here at every step</p></div>
+    </div>
+    <div class="flex items-center justify-end">
+      <p class="text-xs text-outline">© 2024 VEKAS Construction. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+const PROJECT_ID = {{ project.id }};
+const FOLDER     = '{{ current_folder }}';
+let selectedFiles = [];
+
+// ── File search ──
+function filterFiles(q) {
+  const lower = q.toLowerCase();
+  const cards = document.querySelectorAll('.file-card[data-name]');
+  let visible = 0;
+  cards.forEach(c => {
+    const show = !q || c.dataset.name.includes(lower);
+    c.style.display = show ? '' : 'none';
+    if(show) visible++;
+  });
+  document.getElementById('no-files-results')?.classList.toggle('hidden', visible > 0);
+}
+
+// ── Delete file ──
+function deleteFile(fileId) {
+  if (!confirm('Delete this file permanently?')) return;
+  fetch(`/project/${PROJECT_ID}/file/${fileId}/delete`, {method:'POST'})
+    .then(r=>r.json())
+    .then(d=>{
+      if(d.success){
+        const card = document.getElementById(`file-card-${fileId}`);
+        if(card) card.remove();
+        else window.location.reload();
+      } else alert('Error: ' + d.error);
+    });
+}
+
+// ── Upload modal ──
+function openUploadModal() {
+  document.getElementById('upload-modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  selectedFiles = []; renderSelectedFiles();
+  document.getElementById('upload-error').classList.add('hidden');
+  document.getElementById('upload-progress-wrap').classList.add('hidden');
+}
+function closeUploadModal() {
+  document.getElementById('upload-modal').classList.add('hidden');
+  document.body.style.overflow = '';
+  document.getElementById('file-input').value = '';
+  selectedFiles = []; renderSelectedFiles();
+}
+document.getElementById('upload-modal').addEventListener('click', e=>{
+  if(e.target===document.getElementById('upload-modal')) closeUploadModal();
+});
+
+function handleFileSelect(files) { selectedFiles=Array.from(files); renderSelectedFiles(); }
+function handleUploadDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-drop').classList.remove('border-blueprint-blue','bg-blueprint-blue/5');
+  selectedFiles=Array.from(e.dataTransfer.files); renderSelectedFiles();
+}
+function renderSelectedFiles() {
+  const c=document.getElementById('selected-files'); c.innerHTML='';
+  selectedFiles.forEach((f,i)=>{
+    const sz=f.size<1048576?(f.size/1024).toFixed(1)+' KB':(f.size/1048576).toFixed(1)+' MB';
+    c.innerHTML+=`<div class="flex items-center gap-3 p-2.5 rounded-lg border border-outline-variant/30 bg-surface-container-lowest">
+      <span class="material-symbols-outlined text-blueprint-blue">insert_drive_file</span>
+      <div class="flex-1 min-w-0"><p class="text-sm font-medium truncate">${f.name}</p><p class="text-xs text-outline">${sz}</p></div>
+      <button onclick="removeFile(${i})" class="text-outline hover:text-error"><span class="material-symbols-outlined text-sm">close</span></button>
+    </div>`;
+  });
+}
+function removeFile(i){selectedFiles.splice(i,1); renderSelectedFiles();}
+
+async function submitUpload() {
+  if(!selectedFiles.length){
+    document.getElementById('upload-error-text').textContent='Select at least one file.';
+    document.getElementById('upload-error').classList.remove('hidden'); return;
+  }
+  const btn=document.getElementById('upload-btn');
+  const sp=document.getElementById('upload-btn-spinner');
+  const pw=document.getElementById('upload-progress-wrap');
+  const pb=document.getElementById('upload-progress-bar');
+  const pp=document.getElementById('upload-progress-pct');
+  btn.disabled=true; sp.classList.remove('hidden');
+  document.getElementById('upload-error').classList.add('hidden');
+  pw.classList.remove('hidden');
+
+  const fd=new FormData();
+  fd.append('folder_type', FOLDER);
+  selectedFiles.forEach(f=>fd.append('files',f));
+
+  await new Promise((resolve,reject)=>{
+    const xhr=new XMLHttpRequest();
+    xhr.upload.onprogress=e=>{
+      if(e.lengthComputable){const p=Math.round(e.loaded/e.total*100);pb.style.width=p+'%';pp.textContent=p+'%';}
+    };
+    xhr.onload=()=>{
+      const d=JSON.parse(xhr.responseText);
+      if(d.success){
+        document.getElementById('upload-progress-label').textContent=`Uploaded ${d.uploaded.length} file(s)`;
+        pb.style.width='100%'; pp.textContent='100%';
+        setTimeout(()=>{closeUploadModal(); window.location.reload();}, 600);
+        resolve();
+      } else reject(new Error(d.error));
+    };
+    xhr.onerror=()=>reject(new Error('Network error'));
+    xhr.open('POST',`/project/${PROJECT_ID}/upload`);
+    xhr.send(fd);
+  }).catch(err=>{
+    document.getElementById('upload-error-text').textContent=err.message;
+    document.getElementById('upload-error').classList.remove('hidden');
+    btn.disabled=false; sp.classList.add('hidden'); pw.classList.add('hidden');
+  });
+}
+
+// ── Notes ──
+let noteEditOpen=false;
+function toggleNoteEdit(){
+  noteEditOpen=!noteEditOpen;
+  document.getElementById('note-display').classList.toggle('hidden',noteEditOpen);
+  document.getElementById('note-edit-area').classList.toggle('hidden',!noteEditOpen);
+}
+function cancelNoteEdit(){
+  noteEditOpen=false;
+  document.getElementById('note-display').classList.remove('hidden');
+  document.getElementById('note-edit-area').classList.add('hidden');
+}
+async function saveNotes(){
+  const note=document.getElementById('note-textarea').value;
+  const r=await fetch(`/project/${PROJECT_ID}/notes`,{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({note})
+  });
+  const d=await r.json();
+  if(d.success){
+    document.getElementById('note-display').textContent=note||'No notes yet. Click the edit button to add.';
+    cancelNoteEdit();
+  } else alert('Error: '+d.error);
+}
+
+// ── Flash auto-hide ──
+setTimeout(()=>{
+  document.querySelectorAll('.flash-msg').forEach(el=>{
+    el.style.transition='all .4s ease'; el.style.opacity='0'; el.style.transform='translateX(100%)';
+    setTimeout(()=>el.remove(),400);
+  });
+},5000);
+</script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+{# Reusable file card — used in project_detail.html and project_files.html #}
+<div class="file-card group relative bg-foundation-white border border-outline-variant/50 rounded-xl p-4 hover:border-blueprint-blue/40"
+     id="file-card-{{ f.id }}">
+  {% if f.file_type in ['jpg','jpeg','png','gif','webp'] %}
+    <!-- Image preview card -->
+    <div class="aspect-video rounded-lg overflow-hidden bg-surface-container mb-3 relative">
+      <img src="{{ url_for('download_file', project_id=project.id, file_id=f.id) }}"
+           alt="{{ f.original_name }}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"/>
+      <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+      <div class="absolute bottom-2 left-3">
+        <span class="text-white text-xs font-medium truncate max-w-[120px] block">{{ f.original_name }}</span>
+      </div>
+    </div>
+    <div class="flex items-center justify-between">
+      <span class="text-xs text-outline">{{ f.size_display }}</span>
+      <div class="flex gap-1">
+        <a href="{{ url_for('download_file', project_id=project.id, file_id=f.id) }}"
+           class="p-1 text-outline hover:text-blueprint-blue transition-colors" title="Download">
+          <span class="material-symbols-outlined text-base">download</span>
+        </a>
+        <button onclick="deleteFile({{ f.id }})"
+          class="p-1 text-outline hover:text-error transition-colors" title="Delete">
+          <span class="material-symbols-outlined text-base">delete</span>
+        </button>
+      </div>
+    </div>
+  {% else %}
+    <!-- Document / generic card -->
+    <div class="flex items-start justify-between mb-3">
+      <div class="w-12 h-12 {{ f.icon_bg }} rounded-lg flex items-center justify-center {{ f.icon_text }}">
+        <span class="material-symbols-outlined text-2xl">{{ f.icon }}</span>
+      </div>
+      <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <a href="{{ url_for('download_file', project_id=project.id, file_id=f.id) }}"
+           class="p-1 text-outline hover:text-blueprint-blue transition-colors" title="Download">
+          <span class="material-symbols-outlined text-base">download</span>
+        </a>
+        <button onclick="deleteFile({{ f.id }})"
+          class="p-1 text-outline hover:text-error transition-colors" title="Delete">
+          <span class="material-symbols-outlined text-base">delete</span>
+        </button>
+      </div>
+    </div>
+    <h3 class="font-semibold text-on-surface text-sm truncate mb-1">{{ f.original_name }}</h3>
+    <div class="flex items-center gap-2">
+      <span class="text-xs font-bold text-on-surface-variant bg-surface-container px-1.5 py-0.5 rounded uppercase">
+        {{ f.file_type or '—' }}
+      </span>
+      <span class="text-xs text-outline">{{ f.size_display }}</span>
+    </div>
+    <p class="text-xs text-outline/70 mt-1.5 flex items-center gap-1">
+      <span class="material-symbols-outlined text-xs">schedule</span>{{ f.time_ago }}
+      {% if f.uploader_name %} · {{ f.uploader_name }}{% endif %}
+    </p>
+  {% endif %}
+</div>
