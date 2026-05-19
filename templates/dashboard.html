@@ -84,10 +84,10 @@ tailwind.config={theme:{extend:{colors:{
   .customer-new-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 12px;border-top:1px solid #c0c7cf;background:#e7f2fb;color:#005375;font-size:13px;font-weight:800}
   .project-quick-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
   .project-quick-field label{display:block;margin-bottom:5px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#70787f}
-  .project-quick-field select,.project-quick-field textarea{width:100%;border:1px solid #c0c7cf;border-radius:8px;background:#fff;padding:8px 10px;font-size:12px;outline:0}
-  .project-quick-field textarea{min-height:38px;resize:vertical}
-  .project-quick-field select:focus,.project-quick-field textarea:focus{border-color:#49AAD4;box-shadow:0 0 0 2px rgba(73,170,212,.18)}
+  .project-quick-field select{width:100%;border:1px solid #c0c7cf;border-radius:8px;background:#fff;padding:8px 10px;font-size:12px;outline:0}
+  .project-quick-field select:focus{border-color:#49AAD4;box-shadow:0 0 0 2px rgba(73,170,212,.18)}
   .project-quick-notes{grid-column:1 / -1}
+  .project-note-content{border:1px solid #c0c7cf;border-radius:8px;background:#fff;padding:10px 12px;font-size:13px;line-height:1.45;color:#40484e;white-space:pre-wrap}
 </style>
 </head>
 <body class="bg-background text-on-surface">
@@ -409,10 +409,12 @@ tailwind.config={theme:{extend:{colors:{
                   {% endfor %}
                 </select>
               </div>
+              {% if p.note_text %}
               <div class="project-quick-field project-quick-notes">
-                <label for="quick-notes-{{ p.id }}">Notes</label>
-                <textarea id="quick-notes-{{ p.id }}" placeholder="Add notes" onblur="saveProjectQuickNotes({{ p.id }}, this.value)">{{ p.note_text or '' }}</textarea>
+                <label>Notes</label>
+                <div class="project-note-content">{{ p.note_text }}</div>
               </div>
+              {% endif %}
             </div>
           </div>
         </div>
@@ -982,20 +984,6 @@ async function updateProjectQuickField(projectId, field, value) {
     }
   } catch (_) {
     alert('Unable to update project. Try again.');
-  }
-}
-
-async function saveProjectQuickNotes(projectId, note) {
-  try {
-    const res = await fetch(`/project/${projectId}/notes`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ note })
-    });
-    const data = await res.json();
-    if (!data.success) alert('Error: ' + data.error);
-  } catch (_) {
-    alert('Unable to save notes. Try again.');
   }
 }
 
