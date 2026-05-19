@@ -146,7 +146,8 @@ def ensure_project_identity_schema(cursor):
           AND TABLE_NAME = 'projects'
           AND INDEX_NAME IN ('uq_projects_company_name', 'uq_projects_contact_number')
     """)
-    for row in cursor.fetchall():
+    rows = cursor.fetchall()
+    for row in rows:
         cursor.execute(f"DROP INDEX {row['INDEX_NAME']} ON projects")
 
 
@@ -158,10 +159,13 @@ def generate_project_code(cursor, prefix=None, year=None):
         SELECT project_code, project_sequence
         FROM projects
         WHERE project_code LIKE %s
+           OR (project_prefix = %s AND project_year = %s)
+           OR project_code IS NULL
         ORDER BY COALESCE(project_sequence, 0) DESC, project_code DESC
-    """, (code_prefix + '%',))
-    next_num = 1
-    for row in cursor.fetchall():
+    """, (code_prefix + '%', prefix, year))
+    rows = cursor.fetchall()
+    max_num = 0
+    for row in rows:
         candidates = []
         if row.get('project_sequence'):
             candidates.append(row['project_sequence'])
@@ -171,8 +175,8 @@ def generate_project_code(cursor, prefix=None, year=None):
             except (ValueError, IndexError):
                 pass
         if candidates:
-            next_num = max(candidates) + 1
-            break
+            max_num = max(max_num, *candidates)
+    next_num = max(max_num, len(rows)) + 1
     return f"{code_prefix}{next_num:03d}", prefix, year, next_num
 
 
@@ -838,10 +842,18 @@ def project_detail(project_id):
         total_bytes = cursor.fetchone()['total']
         capacity_pct = min(100, round(total_bytes / app.config['PROJECT_STORAGE_LIMIT'] * 100, 1))
 
-        # Other projects (for sidebar switcher)
-        cursor.execute("SELECT id, name FROM projects WHERE id != %s ORDER BY created_at DESC LIMIT 10",
-                       (project_id,))
-        other_projects = cursor.fetchall()
+        # Projects for the same client (for sidebar switcher)
+        client_name = (project.get('client_name') or '').strip()
+        if client_name:
+            cursor.execute("""
+                SELECT id, name, status
+                FROM projects
+                WHERE client_name = %s
+                ORDER BY id = %s DESC, created_at DESC
+            """, (client_name, project_id))
+            other_projects = cursor.fetchall()
+        else:
+            other_projects = []
 
         conn.close()
 

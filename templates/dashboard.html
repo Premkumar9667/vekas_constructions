@@ -319,6 +319,7 @@ tailwind.config={theme:{extend:{colors:{
         {% for p in projects %}
         <div class="project-card card-appear bg-foundation-white rounded-xl border border-outline-variant overflow-hidden hover:shadow-md transition-shadow"
              data-name="{{ p.name|lower }}"
+             data-project-code="{{ p.project_code or '' }}"
              data-client="{{ (p.client_name or '')|lower }}"
              data-customer="{{ (p.customer_name or p.client_name or '')|lower }}"
              data-status="{{ p.status }}"
@@ -1074,6 +1075,23 @@ function createNewCustomerName() {
 }
 
 let projectCodeTimer;
+function localNextProjectSequence(prefix, year) {
+  const codePrefix = `${prefix}-${year}-`;
+  let maxSequence = 0;
+  let matchingCount = 0;
+  document.querySelectorAll('.project-card').forEach(card => {
+    const code = card.dataset.projectCode || '';
+    if (code.startsWith(codePrefix)) {
+      matchingCount++;
+      const sequence = Number(code.split('-').pop());
+      if (Number.isFinite(sequence)) maxSequence = Math.max(maxSequence, sequence);
+    } else if (!code) {
+      matchingCount++;
+    }
+  });
+  return Math.max(maxSequence, matchingCount) + 1;
+}
+
 async function updateProjectCodePreview() {
   const prefixInput = document.getElementById('cp-project-prefix');
   const yearInput = document.getElementById('cp-project-year');
@@ -1084,7 +1102,8 @@ async function updateProjectCodePreview() {
   const prefix = prefixInput.value;
   const year = yearInput.value;
   if (!prefix) {
-    codeInput.value = `${year}-001`;
+    const sequence = localNextProjectSequence('VKS', year);
+    codeInput.value = `${year}-${String(sequence).padStart(3, '0')}`;
     if (helpText) helpText.textContent = 'Type a prefix to calculate the next project number.';
     return;
   }
@@ -1095,11 +1114,13 @@ async function updateProjectCodePreview() {
     try {
       const res = await fetch(`/api/project/next-code?prefix=${encodeURIComponent(prefix)}&year=${encodeURIComponent(year)}`);
       const data = await res.json();
-      codeInput.value = data.success ? data.projectCode : `${prefix}-${year}-001`;
-      if (helpText) helpText.textContent = `Next project number: ${String(data.sequence || 1).padStart(3, '0')}`;
+      const sequence = data.success ? data.sequence : localNextProjectSequence(prefix, year);
+      codeInput.value = data.success ? data.projectCode : `${prefix}-${year}-${String(sequence).padStart(3, '0')}`;
+      if (helpText) helpText.textContent = `Next project number: ${String(sequence).padStart(3, '0')}`;
     } catch (_) {
-      codeInput.value = `${prefix}-${year}-001`;
-      if (helpText) helpText.textContent = 'Next project number: 001';
+      const sequence = localNextProjectSequence(prefix, year);
+      codeInput.value = `${prefix}-${year}-${String(sequence).padStart(3, '0')}`;
+      if (helpText) helpText.textContent = `Next project number: ${String(sequence).padStart(3, '0')}`;
     }
   }, 250);
 }

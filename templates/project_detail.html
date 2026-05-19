@@ -171,6 +171,29 @@ html,body{height:100%;margin:0;padding:0;font-family:'Hanken Grotesk',sans-serif
       <span class="mat">dashboard</span>
       <span>Overview</span>
     </a>
+    {% if other_projects %}
+    <div style="margin-top:22px">
+      <p style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#70787f;margin:0 0 10px;padding:0 4px">
+        {{ project.client_name or 'Client' }} Projects
+      </p>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        {% for other in other_projects %}
+        <a href="{{ url_for('project_detail', project_id=other.id) }}"
+           style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;text-decoration:none;border:1px solid {% if other.id == project.id %}rgba(30,108,147,.28){% else %}transparent{% endif %};background:{% if other.id == project.id %}rgba(30,108,147,.08){% else %}transparent{% endif %};color:#1b1c1c;transition:all .2s"
+           onmouseover="this.style.background='rgba(30,108,147,.08)'"
+           onmouseout="this.style.background='{% if other.id == project.id %}rgba(30,108,147,.08){% else %}transparent{% endif %}'">
+          <div style="width:34px;height:34px;border-radius:9px;background:{% if other.id == project.id %}#1E6C93{% else %}#e5e2e1{% endif %};display:flex;align-items:center;justify-content:center;color:{% if other.id == project.id %}#fff{% else %}#40484e{% endif %};font-size:12px;font-weight:800;flex-shrink:0">
+            {{ other.name[:2].upper() }}
+          </div>
+          <div style="min-width:0;flex:1">
+            <p style="font-size:13px;font-weight:800;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ other.name }}</p>
+            <p style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#70787f;margin:2px 0 0">{{ other.status }}</p>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
   </nav>
 
 </aside>
