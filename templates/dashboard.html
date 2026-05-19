@@ -76,6 +76,18 @@ tailwind.config={theme:{extend:{colors:{
   .phone-field{display:flex;align-items:center;overflow:hidden;border:1px solid #c0c7cf;border-radius:12px;background:#fff}
   .phone-field span{align-self:stretch;display:flex;align-items:center;padding:0 12px;background:#f0eded;border-right:1px solid #c0c7cf;color:#40484e;font-size:14px;font-weight:800}
   .phone-field input{min-width:0;flex:1;border:0;background:transparent;padding:12px 14px;font-size:14px;outline:0}
+  .customer-picker{position:relative}
+  .customer-options{position:absolute;z-index:80;left:0;right:0;top:calc(100% + 6px);max-height:290px;overflow:hidden;background:#fff;border:1px solid #c0c7cf;border-radius:12px;box-shadow:0 18px 45px rgba(33,33,33,.16)}
+  .customer-options-list{max-height:220px;overflow-y:auto;padding:8px}
+  .customer-option{width:100%;display:block;text-align:left;padding:10px 12px;border-radius:8px;font-size:14px;color:#1b1c1c}
+  .customer-option:hover{background:#f0eded;color:#005375}
+  .customer-new-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 12px;border-top:1px solid #c0c7cf;background:#e7f2fb;color:#005375;font-size:13px;font-weight:800}
+  .project-quick-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+  .project-quick-field label{display:block;margin-bottom:5px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#70787f}
+  .project-quick-field select,.project-quick-field textarea{width:100%;border:1px solid #c0c7cf;border-radius:8px;background:#fff;padding:8px 10px;font-size:12px;outline:0}
+  .project-quick-field textarea{min-height:38px;resize:vertical}
+  .project-quick-field select:focus,.project-quick-field textarea:focus{border-color:#49AAD4;box-shadow:0 0 0 2px rgba(73,170,212,.18)}
+  .project-quick-notes{grid-column:1 / -1}
 </style>
 </head>
 <body class="bg-background text-on-surface">
@@ -297,7 +309,7 @@ tailwind.config={theme:{extend:{colors:{
           <div class="h-1 bg-blueprint-blue"></div>
           <div class="project-card-body p-6">
             <div class="project-card-top flex justify-between items-start mb-4">
-              <span class="px-3 py-1 rounded-full text-xs font-bold uppercase status-badge-{{ p.status|lower|replace(' ','-') }}">
+              <span id="status-badge-{{ p.id }}" class="px-3 py-1 rounded-full text-xs font-bold uppercase status-badge-{{ p.status|lower|replace(' ','-') }}">
                 {{ p.status }}
               </span>
               <div class="relative">
@@ -379,6 +391,28 @@ tailwind.config={theme:{extend:{colors:{
                  class="flex-1 py-2 text-center text-xs font-bold text-on-surface-variant border border-outline-variant rounded-lg hover:bg-surface-container transition-all">
                 View Files
               </a>
+            </div>
+            <div class="project-quick-fields">
+              <div class="project-quick-field">
+                <label for="quick-status-{{ p.id }}">Status</label>
+                <select id="quick-status-{{ p.id }}" onchange="updateProjectQuickField({{ p.id }}, 'status', this.value)">
+                  {% for status_option in ['Planning', 'In Progress', 'Review', 'Completed', 'Delayed'] %}
+                    <option value="{{ status_option }}" {% if p.status == status_option %}selected{% endif %}>{{ status_option }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="project-quick-field">
+                <label for="quick-priority-{{ p.id }}">Priority</label>
+                <select id="quick-priority-{{ p.id }}" onchange="updateProjectQuickField({{ p.id }}, 'priority', this.value)">
+                  {% for priority_option in ['Medium', 'High', 'Low'] %}
+                    <option value="{{ priority_option }}" {% if p.priority == priority_option %}selected{% endif %}>{{ priority_option }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="project-quick-field project-quick-notes">
+                <label for="quick-notes-{{ p.id }}">Notes</label>
+                <textarea id="quick-notes-{{ p.id }}" placeholder="Add notes" onblur="saveProjectQuickNotes({{ p.id }}, this.value)">{{ p.note_text or '' }}</textarea>
+              </div>
             </div>
           </div>
         </div>
@@ -570,6 +604,7 @@ tailwind.config={theme:{extend:{colors:{
             <div class="form-field md:col-span-2">
               <label for="cp-project-code">Generated Project ID</label>
               <input id="cp-project-code" type="text" value="VKS-2026-001" readonly class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container text-sm text-on-surface-variant font-bold"/>
+              <p id="cp-project-code-help" class="mt-2 text-xs font-semibold text-blueprint-blue">Next project number: 001</p>
             </div>
           </div>
           <div class="form-field">
@@ -578,7 +613,25 @@ tailwind.config={theme:{extend:{colors:{
           </div>
           <div class="form-field">
             <label for="cp-customer">Customer Name *</label>
-            <input id="cp-customer" type="text" placeholder="Enter customer name" required class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm"/>
+            <div class="customer-picker" id="customer-picker">
+              <input id="cp-customer" type="text" placeholder="Please select a customer name" autocomplete="off" onfocus="openCustomerPicker()" oninput="filterCustomerOptions()" required class="w-full px-4 py-3 pr-10 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm"/>
+              <button type="button" onclick="toggleCustomerPicker()" class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-blueprint-blue">
+                <span class="material-symbols-outlined text-lg">expand_more</span>
+              </button>
+              <div id="customer-options" class="customer-options hidden">
+                <div class="p-3 border-b border-outline-variant">
+                  <input id="customer-option-search" type="text" placeholder="Search to select" oninput="filterCustomerOptions(this.value)" class="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm"/>
+                </div>
+                <div id="customer-options-list" class="customer-options-list">
+                  {% for customer, grouped_projects in projects|selectattr('customer_name')|groupby('customer_name') %}
+                    <button type="button" class="customer-option" data-customer="{{ customer|lower }}" onclick="selectCustomerName('{{ customer|replace("'","\\'")|e }}')">{{ customer }}</button>
+                  {% endfor %}
+                </div>
+                <button type="button" onclick="createNewCustomerName()" class="customer-new-btn">
+                  <span class="material-symbols-outlined text-base">add_circle</span> New Customer
+                </button>
+              </div>
+            </div>
           </div>
           <div class="form-field">
             <label for="cp-job-position">Job Position</label>
@@ -762,6 +815,7 @@ function toggleUserMenu() {
 document.addEventListener('click', e => {
   if (!document.getElementById('user-menu-wrapper').contains(e.target))
     document.getElementById('user-menu').classList.add('hidden');
+  if (!e.target.closest('#customer-picker')) closeCustomerPicker();
 });
 
 // ── Card dropdown menus ──
@@ -899,6 +953,52 @@ setProjectView(localStorage.getItem('projectViewMode') || 'grid');
 
 if (window.location.hash === '#team') showDashboardView('team');
 
+function statusBadgeClass(status) {
+  return `px-3 py-1 rounded-full text-xs font-bold uppercase status-badge-${status.toLowerCase().replace(/\s+/g, '-')}`;
+}
+
+async function updateProjectQuickField(projectId, field, value) {
+  try {
+    const res = await fetch(`/project/${projectId}/update`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ [field]: value })
+    });
+    const data = await res.json();
+    if (!data.success) {
+      alert('Error: ' + data.error);
+      return;
+    }
+
+    if (field === 'status') {
+      const card = document.querySelector(`#quick-status-${projectId}`)?.closest('.project-card');
+      const badge = document.getElementById(`status-badge-${projectId}`);
+      if (card) card.dataset.status = value;
+      if (badge) {
+        badge.textContent = value;
+        badge.className = statusBadgeClass(value);
+      }
+      filterProjects();
+    }
+  } catch (_) {
+    alert('Unable to update project. Try again.');
+  }
+}
+
+async function saveProjectQuickNotes(projectId, note) {
+  try {
+    const res = await fetch(`/project/${projectId}/notes`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ note })
+    });
+    const data = await res.json();
+    if (!data.success) alert('Error: ' + data.error);
+  } catch (_) {
+    alert('Unable to save notes. Try again.');
+  }
+}
+
 function syncWhatsappIfChecked() {
   if (document.getElementById('cp-whatsapp-same')?.checked) {
     document.getElementById('cp-whatsapp').value = document.getElementById('cp-contact').value;
@@ -909,28 +1009,74 @@ function cleanPhoneInput(input) {
   input.value = input.value.replace(/\D/g, '').slice(0, 10);
 }
 
+function openCustomerPicker() {
+  document.getElementById('customer-options')?.classList.remove('hidden');
+  filterCustomerOptions();
+}
+
+function closeCustomerPicker() {
+  document.getElementById('customer-options')?.classList.add('hidden');
+}
+
+function toggleCustomerPicker() {
+  const panel = document.getElementById('customer-options');
+  if (!panel) return;
+  panel.classList.toggle('hidden');
+  if (!panel.classList.contains('hidden')) {
+    document.getElementById('customer-option-search').value = '';
+    filterCustomerOptions();
+    document.getElementById('customer-option-search').focus();
+  }
+}
+
+function filterCustomerOptions(term) {
+  const inputValue = term ?? document.getElementById('cp-customer')?.value ?? '';
+  const q = inputValue.toLowerCase().trim();
+  document.querySelectorAll('.customer-option').forEach(option => {
+    option.classList.toggle('hidden', q && !option.dataset.customer.includes(q));
+  });
+}
+
+function selectCustomerName(name) {
+  document.getElementById('cp-customer').value = name;
+  closeCustomerPicker();
+}
+
+function createNewCustomerName() {
+  const search = document.getElementById('customer-option-search')?.value.trim();
+  const typed = document.getElementById('cp-customer')?.value.trim();
+  document.getElementById('cp-customer').value = search || typed || '';
+  closeCustomerPicker();
+  document.getElementById('cp-customer').focus();
+}
+
 let projectCodeTimer;
 async function updateProjectCodePreview() {
   const prefixInput = document.getElementById('cp-project-prefix');
   const yearInput = document.getElementById('cp-project-year');
   const codeInput = document.getElementById('cp-project-code');
+  const helpText = document.getElementById('cp-project-code-help');
   if (!prefixInput || !yearInput || !codeInput) return;
   prefixInput.value = prefixInput.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 12);
   const prefix = prefixInput.value;
   const year = yearInput.value;
   if (!prefix) {
     codeInput.value = `${year}-001`;
+    if (helpText) helpText.textContent = 'Type a prefix to calculate the next project number.';
     return;
   }
   codeInput.value = `${prefix}-${year}-...`;
+  if (helpText) helpText.textContent = 'Checking next available project number...';
   clearTimeout(projectCodeTimer);
   projectCodeTimer = setTimeout(async () => {
     try {
       const res = await fetch(`/api/project/next-code?prefix=${encodeURIComponent(prefix)}&year=${encodeURIComponent(year)}`);
       const data = await res.json();
       codeInput.value = data.success ? data.projectCode : `${prefix}-${year}-001`;
+      if (helpText) helpText.textContent = `Next project number: ${String(data.sequence || 1).padStart(3, '0')}`;
     } catch (_) {
       codeInput.value = `${prefix}-${year}-001`;
+      if (helpText) helpText.textContent = 'Next project number: 001';
     }
   }, 250);
 }
@@ -985,6 +1131,7 @@ function closeCreateModal() {
   document.getElementById('cp-project-prefix').value = 'VKS';
   document.getElementById('cp-project-year').value = '2026';
   document.getElementById('cp-project-code').value = 'VKS-2026-001';
+  document.getElementById('cp-project-code-help').textContent = 'Next project number: 001';
   document.getElementById('floor-rows').innerHTML = '';
   document.getElementById('cp-total-area').textContent = '0';
   document.getElementById('create-error').classList.add('hidden');

@@ -161,17 +161,25 @@ def generate_project_code(cursor, prefix=None, year=None):
     prefix = sanitize_project_prefix(prefix)
     year = normalize_project_year(year)
     code_prefix = f"{prefix}-{year}-"
-    cursor.execute(
-        "SELECT project_code FROM projects WHERE project_code LIKE %s ORDER BY project_code DESC LIMIT 1",
-        (code_prefix + '%',)
-    )
-    row = cursor.fetchone()
+    cursor.execute("""
+        SELECT project_code, project_sequence
+        FROM projects
+        WHERE project_code LIKE %s
+        ORDER BY COALESCE(project_sequence, 0) DESC, project_code DESC
+    """, (code_prefix + '%',))
     next_num = 1
-    if row and row.get('project_code'):
-        try:
-            next_num = int(row['project_code'].split('-')[-1]) + 1
-        except (ValueError, IndexError):
-            next_num = 1
+    for row in cursor.fetchall():
+        candidates = []
+        if row.get('project_sequence'):
+            candidates.append(row['project_sequence'])
+        if row.get('project_code'):
+            try:
+                candidates.append(int(row['project_code'].split('-')[-1]))
+            except (ValueError, IndexError):
+                pass
+        if candidates:
+            next_num = max(candidates) + 1
+            break
     return f"{code_prefix}{next_num:03d}", prefix, year, next_num
 
 
@@ -493,7 +501,8 @@ def dashboard():
             SELECT p.*,
                    u.name  AS creator_name,
                    (SELECT COUNT(*) FROM files f WHERE f.project_id = p.id) AS file_count,
-                   (SELECT COALESCE(SUM(file_size),0) FROM files f WHERE f.project_id = p.id) AS storage_bytes
+                   (SELECT COALESCE(SUM(file_size),0) FROM files f WHERE f.project_id = p.id) AS storage_bytes,
+                   (SELECT pn.note FROM project_notes pn WHERE pn.project_id = p.id ORDER BY pn.updated_at DESC LIMIT 1) AS note_text
             FROM projects p
             LEFT JOIN users u ON p.created_by = u.id
             ORDER BY p.created_at DESC
