@@ -729,13 +729,6 @@ html,body{height:100%;margin:0;padding:0;font-family:'Hanken Grotesk',sans-serif
       </button>
     </div>
     <div style="padding:22px">
-      <!-- Folder toggle -->
-      <div style="display:flex;gap:8px;margin-bottom:18px">
-        <button onclick="setFolder('Drawing')" id="fbtn-drawing"
-          style="flex:1;padding:10px;border-radius:10px;border:2px solid #1E6C93;background:#1E6C93;color:#fff;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s">Drawing</button>
-        <button onclick="setFolder('Output')" id="fbtn-output"
-          style="flex:1;padding:10px;border-radius:10px;border:2px solid #e5e2e1;background:#fff;color:#40484e;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s">Output</button>
-      </div>
       <!-- Drop -->
       <div id="upload-drop" class="drop-zone"
            style="padding:40px 24px;text-align:center;cursor:pointer;margin-bottom:16px"
@@ -863,6 +856,7 @@ function switchMainTab(tab){
 function switchSubTab(t){
   document.getElementById('subtab-drawing').style.display=t==='drawing'?'block':'none';
   document.getElementById('subtab-output').style.display=t==='output'?'block':'none';
+  uploadFolder=t==='output'?'Output':'Drawing';
 }
 
 // ── Description toggle ──
@@ -944,7 +938,7 @@ function closeViewer(e){
 
 // ── Upload modal ──
 function openUploadModal(folder){
-  uploadFolder=folder||'Drawing'; setFolder(folder);
+  setUploadFolder(folder || getActiveUploadFolder());
   selFiles=[]; renderSelFiles();
   document.getElementById('up-err').style.display='none';
   document.getElementById('up-prog-wrap').style.display='none';
@@ -958,11 +952,12 @@ function closeUploadModal(e){
   document.getElementById('file-input').value='';
   selFiles=[]; renderSelFiles();
 }
-function setFolder(f){
+function getActiveUploadFolder(){
+  return document.getElementById('mtab-output').classList.contains('active') ? 'Output' : 'Drawing';
+}
+function setUploadFolder(f){
   uploadFolder=f;
   document.getElementById('upload-folder-label').textContent=f;
-  document.getElementById('fbtn-drawing').style.cssText=`flex:1;padding:10px;border-radius:10px;border:2px solid ${f==='Drawing'?'#1E6C93':'#e5e2e1'};background:${f==='Drawing'?'#1E6C93':'#fff'};color:${f==='Drawing'?'#fff':'#40484e'};font-size:14px;font-weight:${f==='Drawing'?'700':'600'};cursor:pointer;transition:all .2s`;
-  document.getElementById('fbtn-output').style.cssText=`flex:1;padding:10px;border-radius:10px;border:2px solid ${f==='Output'?'#1E6C93':'#e5e2e1'};background:${f==='Output'?'#1E6C93':'#fff'};color:${f==='Output'?'#fff':'#40484e'};font-size:14px;font-weight:${f==='Output'?'700':'600'};cursor:pointer;transition:all .2s`;
 }
 function handleFileSelect(files){selFiles=Array.from(files);renderSelFiles()}
 function handleUploadDrop(e){e.preventDefault();document.getElementById('upload-drop').classList.remove('active');selFiles=Array.from(e.dataTransfer.files);renderSelFiles()}
@@ -971,7 +966,7 @@ function handleMainDrop(e){
   const drop=document.getElementById('main-drop');
   if(drop) drop.classList.remove('active');
   selFiles=Array.from(e.dataTransfer.files);
-  openUploadModal('Drawing');
+  openUploadModal(getActiveUploadFolder());
   setTimeout(renderSelFiles,100);
 }
 function renderSelFiles(){
