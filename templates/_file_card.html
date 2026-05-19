@@ -1,6 +1,7 @@
 {# Reusable file card — used in project_detail.html and project_files.html #}
 <div class="file-card group relative bg-foundation-white border border-outline-variant/50 rounded-xl p-4 hover:border-blueprint-blue/40"
-     id="file-card-{{ f.id }}">
+     id="file-card-{{ f.id }}"
+     onclick="if(typeof openViewer==='function') openViewer({{ f.id }}, '{{ f.original_name|replace("'","\\'")|e }}', '{{ f.file_type or "" }}')">
   {% if f.file_type in ['jpg','jpeg','png','gif','webp'] %}
     <!-- Image preview card -->
     <div class="aspect-video rounded-lg overflow-hidden bg-surface-container mb-3 relative">
@@ -15,10 +16,11 @@
       <span class="text-xs text-outline">{{ f.size_display }}</span>
       <div class="flex gap-1">
         <a href="{{ url_for('download_file', project_id=project.id, file_id=f.id) }}"
+           onclick="event.stopPropagation()"
            class="p-1 text-outline hover:text-blueprint-blue transition-colors" title="Download">
           <span class="material-symbols-outlined text-base">download</span>
         </a>
-        <button onclick="deleteFile({{ f.id }})"
+        <button onclick="event.stopPropagation();deleteFile({{ f.id }})"
           class="p-1 text-outline hover:text-error transition-colors" title="Delete">
           <span class="material-symbols-outlined text-base">delete</span>
         </button>
@@ -32,10 +34,11 @@
       </div>
       <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <a href="{{ url_for('download_file', project_id=project.id, file_id=f.id) }}"
+           onclick="event.stopPropagation()"
            class="p-1 text-outline hover:text-blueprint-blue transition-colors" title="Download">
           <span class="material-symbols-outlined text-base">download</span>
         </a>
-        <button onclick="deleteFile({{ f.id }})"
+        <button onclick="event.stopPropagation();deleteFile({{ f.id }})"
           class="p-1 text-outline hover:text-error transition-colors" title="Delete">
           <span class="material-symbols-outlined text-base">delete</span>
         </button>

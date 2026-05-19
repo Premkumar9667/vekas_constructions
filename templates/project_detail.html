@@ -253,28 +253,21 @@ html,body{height:100%;margin:0;padding:0;font-family:'Hanken Grotesk',sans-serif
         </button>
         {% endif %}
       </div>
-      <!-- Actions -->
-      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start">
-        <button onclick="openUploadModal('Drawing')"
-          style="display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#1E6C93,#49AAD4);color:#fff;border:none;border-radius:12px;padding:12px 20px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(30,108,147,.3);transition:all .25s">
-          <span class="mat" style="font-size:18px">cloud_upload</span> Upload
+      <div style="position:relative">
+        <button onclick="toggleMenu('proj-menu')" id="proj-menu-btn"
+          style="background:#fff;border:1px solid #e5e2e1;border-radius:12px;padding:11px;cursor:pointer;display:flex;align-items:center;transition:all .2s">
+          <span class="mat">more_vert</span>
         </button>
-        <div style="position:relative">
-          <button onclick="toggleMenu('proj-menu')" id="proj-menu-btn"
-            style="background:#fff;border:1px solid #e5e2e1;border-radius:12px;padding:11px;cursor:pointer;display:flex;align-items:center;transition:all .2s">
-            <span class="mat">more_vert</span>
+        <div id="proj-menu" style="display:none;position:absolute;right:0;top:calc(100% + 8px);width:190px;background:#fff;border:1px solid #e5e2e1;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);overflow:hidden;z-index:50">
+          <button onclick="openStatusModal();closeMenu('proj-menu')" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 16px;background:none;border:none;cursor:pointer;font-size:14px;color:#1b1c1c;transition:background .15s" onmouseover="this.style.background='#f6f3f2'" onmouseout="this.style.background='none'">
+            <span class="mat" style="font-size:16px">edit</span> Edit Status
           </button>
-          <div id="proj-menu" style="display:none;position:absolute;right:0;top:calc(100% + 8px);width:190px;background:#fff;border:1px solid #e5e2e1;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);overflow:hidden;z-index:50">
-            <button onclick="openStatusModal();closeMenu('proj-menu')" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 16px;background:none;border:none;cursor:pointer;font-size:14px;color:#1b1c1c;transition:background .15s" onmouseover="this.style.background='#f6f3f2'" onmouseout="this.style.background='none'">
-              <span class="mat" style="font-size:16px">edit</span> Edit Status
-            </button>
-            <a href="{{ url_for('project_files', project_id=project.id) }}" style="display:flex;align-items:center;gap:10px;padding:12px 16px;text-decoration:none;font-size:14px;color:#1b1c1c;transition:background .15s" onmouseover="this.style.background='#f6f3f2'" onmouseout="this.style.background='none'">
-              <span class="mat" style="font-size:16px">folder_open</span> All Files
-            </a>
-            <button onclick="confirmDelete();closeMenu('proj-menu')" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 16px;background:none;border:none;cursor:pointer;font-size:14px;color:#ba1a1a;transition:background .15s" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='none'">
-              <span class="mat" style="font-size:16px">delete</span> Delete Project
-            </button>
-          </div>
+          <a href="{{ url_for('project_files', project_id=project.id) }}" style="display:flex;align-items:center;gap:10px;padding:12px 16px;text-decoration:none;font-size:14px;color:#1b1c1c;transition:background .15s" onmouseover="this.style.background='#f6f3f2'" onmouseout="this.style.background='none'">
+            <span class="mat" style="font-size:16px">folder_open</span> All Files
+          </a>
+          <button onclick="confirmDelete();closeMenu('proj-menu')" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 16px;background:none;border:none;cursor:pointer;font-size:14px;color:#ba1a1a;transition:background .15s" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='none'">
+            <span class="mat" style="font-size:16px">delete</span> Delete Project
+          </button>
         </div>
       </div>
     </div>
@@ -282,49 +275,24 @@ html,body{height:100%;margin:0;padding:0;font-family:'Hanken Grotesk',sans-serif
 
   <!-- ══ MAIN TABS ══ -->
   <div style="border-bottom:2px solid #e5e2e1;display:flex;margin-bottom:28px;overflow-x:auto" class="anim-up">
-    <button class="main-tab-btn active" id="mtab-blueprints" onclick="switchMainTab('blueprints')">
-      <span class="mat">architecture</span> Blueprints
+    <button class="main-tab-btn active" id="mtab-drawing" onclick="switchMainTab('drawing')">
+      <span class="mat">architecture</span> Drawing
+      <span style="background:#1E6C93;color:#fff;border-radius:12px;padding:2px 8px;font-size:12px;margin-left:4px">{{ drawing_files|length }}</span>
+    </button>
+    <button class="main-tab-btn" id="mtab-output" onclick="switchMainTab('output')">
+      <span class="mat">assignment_turned_in</span> Output
+      <span style="background:#e5e2e1;color:#40484e;border-radius:12px;padding:2px 8px;font-size:12px;margin-left:4px">{{ output_files|length }}</span>
     </button>
     <button class="main-tab-btn" id="mtab-ai-chat" onclick="switchMainTab('ai-chat')">
       <span class="mat">smart_toy</span> AI Chat &amp; Analysis
     </button>
   </div>
 
-  <!-- ════════ BLUEPRINTS TAB ════════ -->
-  <div id="tab-blueprints">
+  <!-- ════════ FILES TAB ════════ -->
+  <div id="tab-files">
     <div style="display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start">
       <!-- Left -->
       <div>
-        <!-- Upload Drop Zone -->
-        <div class="drop-zone anim-up" id="main-drop"
-             style="padding:40px 24px;text-align:center;margin-bottom:24px;cursor:pointer"
-             onclick="openUploadModal('Drawing')"
-             ondragover="event.preventDefault();this.classList.add('active')"
-             ondragleave="this.classList.remove('active')"
-             ondrop="handleMainDrop(event)">
-          <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,rgba(30,108,147,.1),rgba(73,170,212,.08));display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
-            <span class="mat" style="font-size:32px;color:#1E6C93">cloud_upload</span>
-          </div>
-          <p style="font-size:18px;font-weight:700;color:#1b1c1c;margin:0 0 6px">Drop files here or click to upload</p>
-          <p style="font-size:14px;color:#70787f;margin:0 0 16px">PDF, DWG, XLSX, DOCX, JPG, PNG — up to 100 MB</p>
-          <button onclick="event.stopPropagation();openUploadModal('Drawing')"
-            style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#1E6C93,#49AAD4);color:#fff;border:none;border-radius:10px;padding:11px 22px;font-size:15px;font-weight:700;cursor:pointer;transition:all .25s;box-shadow:0 4px 12px rgba(30,108,147,.3)">
-            <span class="mat" style="font-size:16px">add</span> Choose Files
-          </button>
-        </div>
-
-        <!-- Sub-Tabs: Drawing | Output -->
-        <div style="border-bottom:2px solid #e5e2e1;display:flex;margin-bottom:20px">
-          <button class="sub-tab-btn active" id="stab-drawing" onclick="switchSubTab('drawing')">
-            <span class="mat" style="font-size:16px">architecture</span> Drawing
-            <span style="background:#1E6C93;color:#fff;border-radius:12px;padding:2px 8px;font-size:12px;margin-left:4px">{{ drawing_files|length }}</span>
-          </button>
-          <button class="sub-tab-btn" id="stab-output" onclick="switchSubTab('output')">
-            <span class="mat" style="font-size:16px">assignment_turned_in</span> Output
-            <span style="background:#e5e2e1;color:#40484e;border-radius:12px;padding:2px 8px;font-size:12px;margin-left:4px">{{ output_files|length }}</span>
-          </button>
-        </div>
-
         <!-- Drawing files -->
         <div id="subtab-drawing">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
@@ -446,7 +414,7 @@ html,body{height:100%;margin:0;padding:0;font-family:'Hanken Grotesk',sans-serif
         </div>
 
         <!-- Files Quick View -->
-        <div class="card anim-up" style="padding:20px">
+        <div class="card anim-up" style="display:none;padding:20px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
             <span style="font-size:17px;font-weight:700;color:#212121;font-family:'Merriweather',serif">Files</span>
             <button onclick="openUploadModal('Drawing')"
@@ -517,7 +485,7 @@ html,body{height:100%;margin:0;padding:0;font-family:'Hanken Grotesk',sans-serif
         {% endif %}
       </div>
     </div>
-  </div><!-- /tab-blueprints -->
+  </div><!-- /tab-files -->
 
   <!-- ════════ AI CHAT TAB ════════ -->
   <div id="tab-ai-chat" style="display:none">
@@ -657,7 +625,7 @@ html,body{height:100%;margin:0;padding:0;font-family:'Hanken Grotesk',sans-serif
             <div style="text-align:center;padding:24px;color:#70787f;font-size:14px">
               <span class="mat" style="font-size:36px;display:block;margin-bottom:8px;opacity:.4">cloud_upload</span>
               No files uploaded yet.<br>
-              <button onclick="switchMainTab('blueprints');openUploadModal('Drawing')" style="background:none;border:none;color:#1E6C93;cursor:pointer;font-size:14px;font-weight:600;margin-top:6px">Upload files first</button>
+              <button onclick="switchMainTab('drawing');openUploadModal('Drawing')" style="background:none;border:none;color:#1E6C93;cursor:pointer;font-size:14px;font-weight:600;margin-top:6px">Upload files first</button>
             </div>
           {% endif %}
         </div>
@@ -859,19 +827,19 @@ document.addEventListener('click',e=>{
 
 // ── Main tab switch ──
 function switchMainTab(tab){
-  document.getElementById('tab-blueprints').style.display=tab==='blueprints'?'block':'none';
-  document.getElementById('tab-ai-chat').style.display=tab==='ai-chat'?'grid':'none';
-  document.getElementById('mtab-blueprints').classList.toggle('active',tab==='blueprints');
-  document.getElementById('mtab-ai-chat').classList.toggle('active',tab==='ai-chat');
-  if(tab==='ai-chat') document.getElementById('tab-ai-chat').style.display='grid';
+  const isAI=tab==='ai-chat';
+  document.getElementById('tab-files').style.display=isAI?'none':'block';
+  document.getElementById('tab-ai-chat').style.display=isAI?'grid':'none';
+  document.getElementById('mtab-drawing').classList.toggle('active',tab==='drawing');
+  document.getElementById('mtab-output').classList.toggle('active',tab==='output');
+  document.getElementById('mtab-ai-chat').classList.toggle('active',isAI);
+  if(!isAI) switchSubTab(tab);
 }
 
 // ── Sub tab switch ──
 function switchSubTab(t){
   document.getElementById('subtab-drawing').style.display=t==='drawing'?'block':'none';
   document.getElementById('subtab-output').style.display=t==='output'?'block':'none';
-  document.getElementById('stab-drawing').classList.toggle('active',t==='drawing');
-  document.getElementById('stab-output').classList.toggle('active',t==='output');
 }
 
 // ── Description toggle ──
@@ -975,7 +943,14 @@ function setFolder(f){
 }
 function handleFileSelect(files){selFiles=Array.from(files);renderSelFiles()}
 function handleUploadDrop(e){e.preventDefault();document.getElementById('upload-drop').classList.remove('active');selFiles=Array.from(e.dataTransfer.files);renderSelFiles()}
-function handleMainDrop(e){e.preventDefault();document.getElementById('main-drop').classList.remove('active');selFiles=Array.from(e.dataTransfer.files);openUploadModal('Drawing');setTimeout(renderSelFiles,100)}
+function handleMainDrop(e){
+  e.preventDefault();
+  const drop=document.getElementById('main-drop');
+  if(drop) drop.classList.remove('active');
+  selFiles=Array.from(e.dataTransfer.files);
+  openUploadModal('Drawing');
+  setTimeout(renderSelFiles,100);
+}
 function renderSelFiles(){
   const c=document.getElementById('sel-files');c.innerHTML='';
   selFiles.forEach((f,i)=>{
