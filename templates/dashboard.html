@@ -90,6 +90,63 @@ tailwind.config={theme:{extend:{colors:{
   .project-quick-field select:focus{border-color:#49AAD4;box-shadow:0 0 0 2px rgba(73,170,212,.18)}
   .project-quick-notes{grid-column:1 / -1}
   .project-note-content{border:1px solid #c0c7cf;border-radius:8px;background:#fff;padding:10px 12px;font-size:13px;line-height:1.45;color:#40484e;white-space:pre-wrap}
+  html,body{max-width:100%;overflow-x:hidden}
+  button,a,input,select,textarea{touch-action:manipulation}
+  @media (max-width:1024px){
+    header{padding-left:20px!important;padding-right:20px!important}
+    header img{width:190px!important;height:52px!important}
+    main{padding-left:20px!important;padding-right:20px!important}
+    .dashboard-filters{grid-template-columns:repeat(2,minmax(0,1fr))}
+    #project-grid{gap:18px}
+  }
+  @media (max-width:767px){
+    body{font-size:15px}
+    header{height:58px!important;padding-left:12px!important;padding-right:12px!important}
+    header > div:first-child{gap:10px!important;min-width:0}
+    header img{width:142px!important;height:44px!important}
+    header .material-symbols-outlined{font-size:22px}
+    main{padding-top:78px!important;padding-left:14px!important;padding-right:14px!important;padding-bottom:86px!important}
+    h1{font-size:clamp(28px,8vw,34px)!important;line-height:1.15!important}
+    .dashboard-toolbar{display:flex;flex-direction:column;align-items:stretch}
+    .dashboard-filters{grid-template-columns:1fr!important;width:100%;gap:10px}
+    .dashboard-actions{width:100%;display:grid;grid-template-columns:48px 1fr;gap:10px}
+    .dashboard-actions > div{width:100%;height:48px}
+    .dashboard-actions button,
+    .dashboard-filters input,
+    .dashboard-filters select{min-height:48px;font-size:16px}
+    #project-grid{grid-template-columns:1fr!important;gap:14px}
+    .project-card{border-radius:14px!important}
+    .project-card-body{padding:16px!important}
+    .project-card-top{gap:10px}
+    .project-card-meta{display:grid!important;grid-template-columns:1fr 1fr;gap:10px!important;align-items:start!important}
+    .project-card-actions{display:grid!important;grid-template-columns:1fr 1fr;gap:10px!important}
+    .project-card-actions a,
+    .project-card-actions button{min-height:48px;justify-content:center}
+    #project-grid.list-view .project-card-body{display:block!important;padding:16px!important}
+    #project-grid.list-view .project-card-actions{min-width:0!important}
+    .project-quick-fields{grid-template-columns:1fr}
+    #team-grid{grid-template-columns:1fr!important}
+    .team-card{border-radius:14px!important}
+    #create-modal,
+    #edit-modal,
+    #project-id-settings-modal{align-items:flex-end!important;padding:0!important}
+    #create-modal > div,
+    #edit-modal > div,
+    #project-id-settings-modal > div{width:100%!important;max-width:none!important;max-height:92dvh!important;border-radius:20px 20px 0 0!important}
+    #create-project-form,
+    #edit-project-form{padding:18px!important}
+    .form-field input,
+    .form-field select,
+    .form-field textarea,
+    .phone-field{min-height:48px;font-size:16px}
+    .floor-row{grid-template-columns:1fr!important}
+  }
+  @media (max-width:420px){
+    main{padding-left:12px!important;padding-right:12px!important}
+    .dashboard-actions{grid-template-columns:1fr}
+    .dashboard-actions > div{justify-self:start}
+    .project-card-meta{grid-template-columns:1fr!important}
+  }
 </style>
 </head>
 <body class="bg-background text-on-surface">
@@ -129,30 +186,27 @@ tailwind.config={theme:{extend:{colors:{
       <a href="#" class="text-on-surface-variant hover:text-primary transition-colors text-sm font-medium">Reports</a>
     </nav>
   </div>
-  <div class="flex items-center gap-3">
+    <div class="flex items-center gap-3">
     <button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors relative">
       <span class="material-symbols-outlined">notifications</span>
     </button>
-    <button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors">
+    <a href="{{ url_for('settings') }}" class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors">
       <span class="material-symbols-outlined">settings</span>
-    </button>
+    </a>
     <div class="relative" id="user-menu-wrapper">
-      <button onclick="toggleUserMenu()" class="flex items-center gap-2 hover:bg-surface-container rounded-full pl-2 pr-3 py-1 transition-colors">
+      <button onclick="toggleUserMenu(event)" class="flex items-center gap-2 hover:bg-surface-container rounded-full pl-2 pr-3 py-1 transition-colors">
         <div class="w-8 h-8 rounded-full bg-blueprint-blue flex items-center justify-center text-white text-xs font-bold">
           {{ current_user.name[:2].upper() if current_user.name else 'VK' }}
         </div>
         <span class="text-sm font-medium text-on-surface hidden md:block">{{ current_user.name.split()[0] }}</span>
       </button>
-      <div id="user-menu" class="hidden absolute right-0 top-full mt-2 w-48 bg-foundation-white rounded-xl shadow-xl border border-outline-variant/50 overflow-hidden z-50">
+        <div id="user-menu" class="hidden absolute right-0 top-full mt-2 w-48 bg-foundation-white rounded-xl shadow-xl border border-outline-variant/50 overflow-hidden z-50">
         <div class="px-4 py-3 border-b border-outline-variant/30">
           <p class="font-semibold text-sm text-on-surface truncate">{{ current_user.name }}</p>
           <p class="text-xs text-outline truncate">{{ current_user.email }}</p>
         </div>
         <a href="#" class="flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container transition-colors">
           <span class="material-symbols-outlined text-base">account_circle</span> My Profile
-        </a>
-        <a href="#" class="flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container transition-colors">
-          <span class="material-symbols-outlined text-base">settings</span> Settings
         </a>
         <div class="border-t border-outline-variant/30"></div>
         <a href="{{ url_for('logout') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-error hover:bg-red-50 transition-colors">
@@ -615,20 +669,12 @@ tailwind.config={theme:{extend:{colors:{
           <div class="xl:col-span-3 grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="form-field">
               <label for="cp-project-prefix">Project ID Prefix *</label>
-              <input id="cp-project-prefix" type="text" value="VKS" maxlength="12" oninput="updateProjectCodePreview()" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm uppercase"/>
-            </div>
-            <div class="form-field">
-              <label for="cp-project-year">Project Year *</label>
-              <select id="cp-project-year" onchange="updateProjectCodePreview()" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm">
-                {% for year in range(2000, 2031) %}
-                  <option value="{{ year }}" {% if year == 2026 %}selected{% endif %}>{{ year }}</option>
-                {% endfor %}
-              </select>
+              <input id="cp-project-prefix" type="text" value="VC-BOQ" maxlength="12" oninput="updateProjectCodePreview()" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm uppercase"/>
             </div>
             <div class="form-field md:col-span-2">
               <label for="cp-project-code">Generated Project ID</label>
-              <input id="cp-project-code" type="text" value="VKS-2026-001" readonly class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container text-sm text-on-surface-variant font-bold"/>
-              <p id="cp-project-code-help" class="mt-2 text-xs font-semibold text-blueprint-blue">Next project number: 001</p>
+              <input id="cp-project-code" type="text" value="VC-BOQ-101-01" readonly class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container text-sm text-on-surface-variant font-bold"/>
+              <p id="cp-project-code-help" class="mt-2 text-xs font-semibold text-blueprint-blue">Next project number: 101-01</p>
             </div>
           </div>
           <div class="form-field">
@@ -659,9 +705,10 @@ tailwind.config={theme:{extend:{colors:{
           </div>
           <div class="form-field">
             <label for="cp-job-position">Job Position</label>
-            <select id="cp-job-position" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm">
+            <select id="cp-job-position" onchange="toggleOtherField('cp-job-position','cp-job-position-other')" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm">
               <option>Owner</option><option>Architect</option><option>Engineer</option><option>Builder</option><option>Contractor</option><option>Other</option>
             </select>
+            <input id="cp-job-position-other" type="text" placeholder="Specify job position" class="w-full px-4 py-3 mt-2 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm hidden" />
           </div>
           <div class="form-field">
             <label for="cp-contact">Contact Number *</label>
@@ -722,9 +769,10 @@ tailwind.config={theme:{extend:{colors:{
           </div>
           <div class="form-field">
             <label for="cp-project-type">Project Type</label>
-            <select id="cp-project-type" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm">
+            <select id="cp-project-type" onchange="toggleOtherField('cp-project-type','cp-project-type-other')" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm">
               <option>Residential</option><option>Commercial</option><option>Villa</option><option>Apartment</option><option>Industrial</option><option>Interior</option><option>Other</option>
             </select>
+            <input id="cp-project-type-other" type="text" placeholder="Specify project type" class="w-full px-4 py-3 mt-2 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm hidden" />
           </div>
           <div class="form-field">
             <label for="cp-start">Start Date</label>
@@ -833,11 +881,14 @@ tailwind.config={theme:{extend:{colors:{
 
 <script>
 // ── User menu ──
-function toggleUserMenu() {
+function toggleUserMenu(e) {
+  e = e || window.event;
+  if (e.stopPropagation) e.stopPropagation();
   document.getElementById('user-menu').classList.toggle('hidden');
 }
 document.addEventListener('click', e => {
-  if (!document.getElementById('user-menu-wrapper').contains(e.target))
+  const wrapper = document.getElementById('user-menu-wrapper');
+  if (!wrapper || !wrapper.contains(e.target))
     document.getElementById('user-menu').classList.add('hidden');
   if (!e.target.closest('#customer-picker')) closeCustomerPicker();
 });
@@ -1075,54 +1126,70 @@ function createNewCustomerName() {
 }
 
 let projectCodeTimer;
-function localNextProjectSequence(prefix, year) {
-  const codePrefix = `${prefix}-${year}-`;
-  let maxSequence = 0;
-  let matchingCount = 0;
+function localNextProjectSequence(prefix) {
+  const codePrefix = `${prefix}-`;
+  let maxMain = 0, maxSubForMain = 0;
   document.querySelectorAll('.project-card').forEach(card => {
     const code = card.dataset.projectCode || '';
     if (code.startsWith(codePrefix)) {
-      matchingCount++;
-      const sequence = Number(code.split('-').pop());
-      if (Number.isFinite(sequence)) maxSequence = Math.max(maxSequence, sequence);
-    } else if (!code) {
-      matchingCount++;
+      const parts = code.split('-');
+      if (parts.length >= 3) {
+        const main = Number(parts[parts.length - 2]);
+        const sub = Number(parts[parts.length - 1]);
+        if (Number.isFinite(main)) {
+          if (main > maxMain) { maxMain = main; maxSubForMain = Number.isFinite(sub) ? sub : 0; }
+          else if (main === maxMain && Number.isFinite(sub)) maxSubForMain = Math.max(maxSubForMain, sub);
+        }
+      }
     }
   });
-  return Math.max(maxSequence, matchingCount) + 1;
+  if (!maxMain) return null;
+  return { main: maxMain, sub: maxSubForMain + 1 };
 }
 
 async function updateProjectCodePreview() {
   const prefixInput = document.getElementById('cp-project-prefix');
-  const yearInput = document.getElementById('cp-project-year');
   const codeInput = document.getElementById('cp-project-code');
   const helpText = document.getElementById('cp-project-code-help');
-  if (!prefixInput || !yearInput || !codeInput) return;
-  prefixInput.value = prefixInput.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 12);
-  const prefix = prefixInput.value;
-  const year = yearInput.value;
-  if (!prefix) {
-    const sequence = localNextProjectSequence('VKS', year);
-    codeInput.value = `${year}-${String(sequence).padStart(3, '0')}`;
-    if (helpText) helpText.textContent = 'Type a prefix to calculate the next project number.';
-    return;
-  }
-  codeInput.value = `${prefix}-${year}-...`;
+  if (!prefixInput || !codeInput) return;
+  // allow letters, numbers and hyphen
+  prefixInput.value = prefixInput.value.replace(/[^A-Z0-9-]/gi, '').toUpperCase().slice(0, 12);
+  const prefix = prefixInput.value || 'VC-BOQ';
+  codeInput.value = `${prefix}-...`;
   if (helpText) helpText.textContent = 'Checking next available project number...';
   clearTimeout(projectCodeTimer);
   projectCodeTimer = setTimeout(async () => {
     try {
-      const res = await fetch(`/api/project/next-code?prefix=${encodeURIComponent(prefix)}&year=${encodeURIComponent(year)}`);
+      const res = await fetch(`/api/project/next-code?prefix=${encodeURIComponent(prefix)}`);
       const data = await res.json();
-      const sequence = data.success ? data.sequence : localNextProjectSequence(prefix, year);
-      codeInput.value = data.success ? data.projectCode : `${prefix}-${year}-${String(sequence).padStart(3, '0')}`;
-      if (helpText) helpText.textContent = `Next project number: ${String(sequence).padStart(3, '0')}`;
-    } catch (_) {
-      const sequence = localNextProjectSequence(prefix, year);
-      codeInput.value = `${prefix}-${year}-${String(sequence).padStart(3, '0')}`;
-      if (helpText) helpText.textContent = `Next project number: ${String(sequence).padStart(3, '0')}`;
+      if (data.success) {
+        codeInput.value = data.projectCode;
+        if (helpText) helpText.textContent = `Next project number: ${String(data.main_sequence)}-${String(data.sub_sequence).padStart(2,'0')}`;
+      } else {
+        // fallback to local calculation
+        const local = localNextProjectSequence(prefix) || { main: 101, sub: 1 };
+        codeInput.value = `${prefix}-${local.main}-${String(local.sub).padStart(2,'0')}`;
+        if (helpText) helpText.textContent = `Next project number: ${String(local.main)}-${String(local.sub).padStart(2,'0')}`;
+      }
+    } catch (err) {
+      const local = localNextProjectSequence(prefix) || { main: 101, sub: 1 };
+      codeInput.value = `${prefix}-${local.main}-${String(local.sub).padStart(2,'0')}`;
+      if (helpText) helpText.textContent = `Next project number: ${String(local.main)}-${String(local.sub).padStart(2,'0')}`;
     }
   }, 250);
+}
+
+function toggleOtherField(selectId, otherInputId) {
+  const sel = document.getElementById(selectId);
+  const other = document.getElementById(otherInputId);
+  if (!sel || !other) return;
+  if (sel.value === 'Other') {
+    other.classList.remove('hidden');
+    other.focus();
+  } else {
+    other.classList.add('hidden');
+    other.value = '';
+  }
 }
 
 function addFloorRow(data = {}) {
@@ -1165,17 +1232,31 @@ function collectFloorRows() {
 function openCreateModal() {
   document.getElementById('create-modal').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
-  updateProjectCodePreview();
+  // Load settings and use default prefix if available, then update preview
+  (async function(){
+    try {
+      const res = await fetch('/api/settings/project-id');
+      const data = await res.json();
+      if (data.success && data.settings && data.settings.default_prefix) {
+        document.getElementById('cp-project-prefix').value = data.settings.default_prefix;
+      }
+    } catch (e) {
+      // ignore
+    }
+    updateProjectCodePreview();
+  })();
   if (!document.querySelector('.floor-row')) addFloorRow({ floor: 'Stilt Floor' });
+  // initialize other-field visibility
+  toggleOtherField('cp-job-position','cp-job-position-other');
+  toggleOtherField('cp-project-type','cp-project-type-other');
 }
 function closeCreateModal() {
   document.getElementById('create-modal').classList.add('hidden');
   document.body.style.overflow = '';
   document.getElementById('create-project-form').reset();
-  document.getElementById('cp-project-prefix').value = 'VKS';
-  document.getElementById('cp-project-year').value = '2026';
-  document.getElementById('cp-project-code').value = 'VKS-2026-001';
-  document.getElementById('cp-project-code-help').textContent = 'Next project number: 001';
+  document.getElementById('cp-project-prefix').value = 'VC-BOQ';
+  document.getElementById('cp-project-code').value = 'VC-BOQ-101-01';
+  document.getElementById('cp-project-code-help').textContent = 'Next project number: 101-01';
   document.getElementById('floor-rows').innerHTML = '';
   document.getElementById('cp-total-area').textContent = '0';
   document.getElementById('create-error').classList.add('hidden');
@@ -1212,11 +1293,11 @@ async function submitCreateProject(e) {
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
         projectPrefix: document.getElementById('cp-project-prefix').value,
-        projectYear: document.getElementById('cp-project-year').value,
         projectName: document.getElementById('cp-name').value,
         companyName: document.getElementById('cp-company').value,
         customerName: document.getElementById('cp-customer').value,
         jobPosition: document.getElementById('cp-job-position').value,
+        jobPositionOther: document.getElementById('cp-job-position-other').value,
         contactNumber: document.getElementById('cp-contact').value,
         whatsappNumber: document.getElementById('cp-whatsapp').value,
         emailId: document.getElementById('cp-email').value,
@@ -1226,6 +1307,7 @@ async function submitCreateProject(e) {
         state: document.getElementById('cp-state').value,
         country: document.getElementById('cp-country').value,
         projectType: document.getElementById('cp-project-type').value,
+        projectTypeOther: document.getElementById('cp-project-type-other').value,
         projectLocation: document.getElementById('cp-location').value,
         buildingAreaDetails: collectFloorRows(),
         totalBuiltupArea: calculateFloorAreas(),
@@ -1311,6 +1393,90 @@ setTimeout(() => {
     setTimeout(() => el.remove(), 400);
   });
 }, 5000);
+</script>
+<!-- Project ID Settings Modal -->
+<div id="project-id-settings-modal" class="hidden fixed inset-0 z-[110] modal-overlay flex items-center justify-center p-4">
+  <div class="bg-foundation-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden">
+    <div class="px-6 py-4 bg-surface-container-low border-b border-outline-variant flex justify-between items-center">
+      <h3 class="text-lg font-bold">Project ID Settings</h3>
+      <button onclick="closeSettingsModal()" class="p-1 rounded hover:bg-surface-container"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div class="p-6 space-y-4">
+      <div class="form-field">
+        <label>Default Project Prefix</label>
+        <input id="settings-prefix" type="text" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm uppercase" maxlength="12" />
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="form-field">
+          <label>Main Start</label>
+          <input id="settings-main" type="number" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm" />
+        </div>
+        <div class="form-field">
+          <label>Sub Start</label>
+          <input id="settings-sub" type="number" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm" />
+        </div>
+      </div>
+      <div class="flex justify-end gap-2">
+        <button onclick="closeSettingsModal()" class="px-4 py-2 rounded-xl border">Cancel</button>
+        <button onclick="resetProjectIdSettings()" id="settings-reset-btn" class="px-4 py-2 rounded-xl border">Reset</button>
+        <button onclick="saveProjectIdSettings()" id="settings-save-btn" class="px-4 py-2 rounded-xl bg-blueprint-blue text-white font-bold">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+async function openSettingsModal() {
+  document.getElementById('project-id-settings-modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  try {
+    const res = await fetch('/api/settings/project-id');
+    const data = await res.json();
+    if (data.success && data.settings) {
+      document.getElementById('settings-prefix').value = data.settings.default_prefix || 'VC-BOQ';
+      document.getElementById('settings-main').value = data.settings.main_sequence_start || 101;
+      document.getElementById('settings-sub').value = data.settings.sub_sequence_start || 1;
+    } else {
+      document.getElementById('settings-prefix').value = 'VC-BOQ';
+      document.getElementById('settings-main').value = 101;
+      document.getElementById('settings-sub').value = 1;
+    }
+  } catch (e) {
+    document.getElementById('settings-prefix').value = 'VC-BOQ';
+    document.getElementById('settings-main').value = 101;
+    document.getElementById('settings-sub').value = 1;
+  }
+}
+function closeSettingsModal() {
+  document.getElementById('project-id-settings-modal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+async function saveProjectIdSettings() {
+  const btn = document.getElementById('settings-save-btn');
+  btn.disabled = true;
+  const payload = {
+    default_prefix: document.getElementById('settings-prefix').value,
+    main_sequence_start: Number(document.getElementById('settings-main').value) || 101,
+    sub_sequence_start: Number(document.getElementById('settings-sub').value) || 1
+  };
+  try {
+    const res = await fetch('/api/settings/project-id', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    const data = await res.json();
+    if (data.success) {
+      closeSettingsModal();
+      updateProjectCodePreview();
+    } else {
+      alert('Error saving settings: ' + (data.error || 'Unknown'));
+    }
+  } catch (e) { alert('Network error'); }
+  btn.disabled = false;
+}
+async function resetProjectIdSettings() {
+  document.getElementById('settings-prefix').value = 'VC-BOQ';
+  document.getElementById('settings-main').value = 101;
+  document.getElementById('settings-sub').value = 1;
+  await saveProjectIdSettings();
+}
 </script>
 </body>
 </html>

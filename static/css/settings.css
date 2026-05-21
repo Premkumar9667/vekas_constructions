@@ -1,0 +1,26 @@
+/* Settings page custom styles */
+
+/* Layout adjustment for the two-column settings grid */
+.settings-grid {
+  grid-template-columns: 1fr 140px;
+}
+@media (max-width: 900px) {
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Toast placement */
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+}
+@media (max-width: 600px) {
+  .toast {
+    left: 12px;
+    right: 12px;
+    top: 12px;
+  }
+}

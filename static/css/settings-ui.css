@@ -1,0 +1,105 @@
+/* settings-ui.css — Modern enterprise styles for Settings page */
+:root{
+  --bg: #ffffff;
+  --muted: #6b7280;
+  --surface: #f8fafc;
+  --card: #ffffff;
+  --border: #e6e9ee;
+  --accent: #0b6ef6; /* VEKAS blue */
+  --accent-600: #055ed1;
+  --success: #059669;
+  --danger: #dc2626;
+  --shadow: 0 6px 18px rgba(7,22,52,0.06);
+}
+
+/* Page container */
+.settings-container{
+  max-width: 1200px;
+  margin: 28px auto;
+  padding: 24px;
+}
+
+.header-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:18px;
+}
+.header-left{
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
+.page-title{font-size:20px;font-weight:700;color:var(--accent);}
+.page-sub{color:var(--muted);font-size:13px}
+
+.back-btn{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--muted);font-weight:600}
+.back-btn:hover{background:#f3f7ff;color:var(--accent)}
+
+/* Grid layout */
+.settings-grid{display:grid;grid-template-columns: 420px 1fr;gap:20px}
+@media (max-width:900px){.settings-grid{grid-template-columns:1fr}}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;box-shadow:var(--shadow)}
+.card-title{font-weight:700;margin-bottom:8px}
+.card-sub{font-size:13px;color:var(--muted);margin-bottom:14px}
+.form-row{display:flex;flex-direction:column;margin-bottom:14px}
+.label{font-size:12px;font-weight:700;color:#111827;margin-bottom:6px}
+.input{height:44px;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface);font-size:14px}
+.input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px rgba(11,110,246,0.08)}
+.helper{font-size:12px;color:var(--muted);margin-top:6px}
+
+.row{display:flex;gap:12px}
+.col{flex:1}
+
+.actions{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+.btn{padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:transparent;font-weight:600;cursor:pointer}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover{background:var(--accent-600)}
+.btn-ghost{background:#fff}
+.btn-danger{background:transparent;color:var(--danger);border-color:rgba(220,38,38,0.08)}
+
+/* Validation */
+.input.error{border-color:var(--danger)}
+.error-text{color:var(--danger);font-size:12px;margin-top:6px}
+
+/* Recent projects table */
+.table-wrap{overflow:auto}
+.table{width:100%;border-collapse:collapse}
+.table th{position:sticky;top:0;background:#fbfdff;padding:12px 10px;text-align:left;font-size:12px;color:var(--muted);border-bottom:1px solid var(--border)}
+.table td{padding:12px 10px;border-bottom:1px solid #f3f5f7}
+.table tbody tr:hover{background:#fbfbff}
+.table tbody tr:nth-child(odd){background:#ffffff}
+.table tbody tr:nth-child(even){background:#fbfdff}
+.action-link{padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--accent);font-weight:600}
+
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:36px;color:var(--muted)}
+.empty-illustration{width:140px;height:88px;margin-bottom:14px;opacity:0.9}
+
+/* Responsive tweaks */
+@media (max-width:600px){
+  html,body{max-width:100%;overflow-x:hidden}
+  .settings-container{margin:0 auto;padding:16px 14px 28px}
+  .header-row{position:sticky;top:0;z-index:20;margin:-16px -14px 18px;padding:12px 14px;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);flex-direction:column;align-items:stretch;gap:12px}
+  .header-left{gap:12px;min-width:0}
+  .page-title{font-size:19px}
+  .page-sub{font-size:12px;line-height:1.4}
+  .back-btn{min-height:44px;justify-content:center;width:100%}
+  .card{padding:16px;border-radius:14px}
+  .row{flex-direction:column;gap:0}
+  .input{height:48px;font-size:16px}
+  .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .btn{min-height:48px}
+  .table-wrap{max-height:none;overflow:visible}
+  .table,.table thead,.table tbody,.table tr,.table td{display:block;width:100%}
+  .table thead{display:none}
+  .table tr{margin-bottom:12px;padding:14px;border:1px solid var(--border);border-radius:14px;background:#fff!important;box-shadow:0 8px 22px rgba(7,22,52,.05)}
+  .table td{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:8px 0;border:0;font-size:14px;line-height:1.35}
+  .table td::before{content:'';flex:0 0 100px;color:var(--muted);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+  .table td:nth-child(1)::before{content:'Project Code'}
+  .table td:nth-child(2)::before{content:'Name'}
+  .table td:nth-child(3)::before{content:'Date'}
+  .table td:nth-child(4)::before{content:'Action'}
+  .action-link{min-height:44px;display:inline-flex;align-items:center;justify-content:center;padding:10px 16px}
+}

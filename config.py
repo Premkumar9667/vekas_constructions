@@ -7,7 +7,7 @@ class Config:
     # MySQL connection. Set secrets in environment variables.
     MYSQL_HOST = os.environ.get('MYSQL_HOST', 'localhost')
     MYSQL_USER = os.environ.get('MYSQL_USER', 'root')
-    MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD', 'Vini01')
+    MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD', 'Dhanush@12')
     MYSQL_DB = os.environ.get('MYSQL_DB', 'vekas_construction')
     MYSQL_PORT = int(os.environ.get('MYSQL_PORT', 3306))
 

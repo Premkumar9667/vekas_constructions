@@ -1,0 +1,339 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Settings — VEKAS</title>
+  <!-- Inline page styles (self-contained for Settings page) -->
+  <style>
+  :root{
+    --bg: #ffffff;
+    --muted: #6b7280;
+    --surface: #f8fafc;
+    --card: #ffffff;
+    --border: #e6e9ee;
+    --accent: #0b6ef6;
+    --accent-600: #055ed1;
+    --success: #059669;
+    --danger: #dc2626;
+    --shadow: 0 8px 28px rgba(7,22,52,0.06);
+    --radius: 12px;
+  }
+  html,body{height:100%;margin:0;background:var(--bg);font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial}
+  .settings-container{max-width:1200px;margin:28px auto;padding:20px}
+  .header-row{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
+  .header-left{display:flex;align-items:center;gap:16px}
+  .logo-image{height:44px;width:auto;object-fit:contain}
+  .page-title{font-size:20px;font-weight:700;color:var(--accent);}
+  .page-sub{color:var(--muted);font-size:13px}
+  .back-btn{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--muted);font-weight:600;text-decoration:none}
+  .back-btn:hover{background:#f3f7ff;color:var(--accent)}
+
+  .settings-grid{display:grid;grid-template-columns:420px 1fr;gap:20px}
+  @media (max-width:980px){.settings-grid{grid-template-columns:1fr}}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+  .card-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .icon-badge{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, rgba(11,110,246,0.12), rgba(11,110,246,0.02));box-shadow:0 6px 18px rgba(11,110,246,0.06);}
+  .icon-svg{width:28px;height:28px;fill:var(--accent)}
+  .card-title-strong{font-weight:800;font-size:15px}
+  .card-title{font-weight:700;margin-bottom:8px;font-size:16px}
+  .card-sub{font-size:13px;color:var(--muted);margin-bottom:14px}
+  .form-row{display:flex;flex-direction:column;margin-bottom:14px}
+  .label{font-size:12px;font-weight:700;color:#111827;margin-bottom:6px}
+  .input{height:44px;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface);font-size:14px}
+  .input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 6px rgba(11,110,246,0.06)}
+  .helper{font-size:12px;color:var(--muted);margin-top:6px}
+  .row{display:flex;gap:12px}
+  .col{flex:1;min-width:0}
+
+  /* Ensure inputs size correctly and don't overflow their flex container */
+  .input, .input-group input { box-sizing: border-box; width:100%; }
+  .input-group{width:100%}
+  .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+  .btn{padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:transparent;font-weight:600;cursor:pointer}
+  .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .btn-primary:hover{background:var(--accent-600)}
+  .btn-primary{transition:transform .18s ease, box-shadow .18s ease}
+  .btn-primary:active{transform:translateY(1px) scale(.995)}
+  .btn-primary.saved{animation:btn-pop .9s ease forwards}
+  @keyframes btn-pop{0%{transform:scale(1)}50%{transform:scale(.98)}100%{transform:scale(1) box-shadow:0 10px 30px rgba(11,110,246,0.12)}}
+  .btn-ghost{background:#fff}
+  .input.error{border-color:var(--danger)}
+  .error-text{color:var(--danger);font-size:12px;margin-top:6px}
+
+  /* input group with icon */
+  .input-group{position:relative}
+  .input-group .input-icon{position:absolute;left:8px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid var(--border);color:var(--accent);font-weight:700}
+  .input.input-with-icon{padding-left:52px}
+
+  /* small spinner */
+  .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,0.25);border-top-color:rgba(255,255,255,0.9);border-radius:50%;animation:spin .9s linear infinite;display:inline-block}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* check animation inside button */
+  .btn-check{display:inline-flex;align-items:center;gap:8px}
+  .checkmark{width:18px;height:18px;display:inline-block;transform:scale(0);opacity:0}
+  .btn-primary.saved .checkmark{animation:pop-check .6s ease forwards}
+  @keyframes pop-check{0%{transform:scale(0);opacity:0}50%{transform:scale(1.1);opacity:1}100%{transform:scale(1);opacity:1}}
+
+  .table-wrap{overflow:auto;max-height:60vh}
+  .table{width:100%;border-collapse:collapse}
+  .table th{position:sticky;top:0;background:#fbfdff;padding:12px 10px;text-align:left;font-size:12px;color:var(--muted);border-bottom:1px solid var(--border)}
+  .table td{padding:12px 10px;border-bottom:1px solid #f3f5f7}
+  .table tbody tr:hover{background:#fbfbff}
+  .table tbody tr:nth-child(even){background:#fbfdff}
+  .action-link{padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--accent);font-weight:600;text-decoration:none}
+  .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:36px;color:var(--muted)}
+  .empty-illustration{width:140px;height:88px;margin-bottom:14px;opacity:0.9}
+  .float-anim{animation:float 6s ease-in-out infinite}
+  @keyframes float{0%{transform:translateY(0)}50%{transform:translateY(-6px)}100%{transform:translateY(0)}}
+
+  /* subtle page decor */
+  .page-decor{
+    position:absolute;right:40px;top:10px;width:340px;height:120px;opacity:0.08;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200"><g fill="none" stroke="%230b6ef6" stroke-width="2" opacity="0.2"><path d="M10 160 L790 160"/><path d="M80 140 V90 H120 V140"/><path d="M220 140 V70 H260 V140"/><path d="M420 140 V50 H460 V140"/></g></svg>');background-size:cover;border-radius:8px;pointer-events:none}
+
+  html,body{max-width:100%;overflow-x:hidden}
+  button,a,input,select,textarea{touch-action:manipulation}
+  @media (max-width:1024px){
+    .settings-container{max-width:100%;margin:0 auto;padding:22px}
+    .settings-grid{grid-template-columns:1fr;gap:18px}
+    .page-decor{display:none}
+  }
+  @media (max-width:767px){
+    .settings-container{padding:16px 14px 28px}
+    .header-row{position:sticky;top:0;z-index:20;margin:-16px -14px 18px;padding:12px 14px;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);flex-direction:column;align-items:stretch;gap:12px}
+    .header-left{gap:12px;min-width:0}
+    .logo-image{height:36px;max-width:132px}
+    .page-title{font-size:19px}
+    .page-sub{font-size:12px;line-height:1.4}
+    .back-btn{min-height:44px;justify-content:center;width:100%}
+    .card{padding:16px;border-radius:14px;box-shadow:0 10px 30px rgba(7,22,52,.07)}
+    .card-header{align-items:flex-start}
+    .icon-badge{width:46px;height:46px;border-radius:12px;flex:0 0 auto}
+    .icon-svg{width:24px;height:24px}
+    .row{flex-direction:column;gap:0}
+    .input{height:48px;font-size:16px}
+    .input-group .input-icon{height:38px;width:38px}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .btn{min-height:48px}
+    .table-wrap{max-height:none;overflow:visible}
+    .table,.table thead,.table tbody,.table tr,.table td{display:block;width:100%}
+    .table thead{display:none}
+    .table tr{margin-bottom:12px;padding:14px;border:1px solid var(--border);border-radius:14px;background:#fff!important;box-shadow:0 8px 22px rgba(7,22,52,.05)}
+    .table td{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:8px 0;border:0;font-size:14px;line-height:1.35}
+    .table td::before{content:'';flex:0 0 100px;color:var(--muted);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+    .table td:nth-child(1)::before{content:'Project Code'}
+    .table td:nth-child(2)::before{content:'Name'}
+    .table td:nth-child(3)::before{content:'Date'}
+    .table td:nth-child(4)::before{content:'Action'}
+    .action-link{min-height:44px;display:inline-flex;align-items:center;justify-content:center;padding:10px 16px}
+    .empty-state{padding:24px 12px;text-align:center}
+  }
+  @media (max-width:420px){
+    .settings-container{padding-left:12px;padding-right:12px}
+    .header-row{margin-left:-12px;margin-right:-12px;padding-left:12px;padding-right:12px}
+    .table td{display:block}
+    .table td::before{display:block;margin-bottom:4px}
+  }
+  </style>
+
+  <!-- React + Babel (in-browser JSX) - no build step required for this page -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+</head>
+<body class="bg-foundation-white text-on-surface">
+  <main class="settings-container">
+    <div class="header-row">
+      <div class="header-left">
+        <a href="{{ url_for('dashboard') }}" class="logo-link">
+          <img src="{{ url_for('static', filename='images/vekas-logo.jpeg') }}" alt="VEKAS" class="logo-image"/>
+        </a>
+        <div>
+          <div class="page-title">Settings</div>
+          <div class="page-sub">Configure Project ID generation and sequence defaults</div>
+        </div>
+      </div>
+      <div>
+        <a href="{{ url_for('dashboard') }}" class="back-btn">Back to Dashboard</a>
+      </div>
+    </div>
+
+    <div class="settings-grid">
+      <div class="page-decor" aria-hidden="true"></div>
+      <section class="card">
+        <div class="card-header">
+          <div class="icon-badge">
+            <svg class="icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zM21 12c0-4.97-4.03-9-9-9S3 7.03 3 12s4.03 9 9 9 9-4.03 9-9z"/></svg>
+          </div>
+          <div>
+            <div class="card-title-strong">Project ID Settings</div>
+            <div class="card-sub">Configure default prefix and starting sequence numbers.</div>
+          </div>
+        </div>
+        <div id="settings-form-root"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <div class="icon-badge">
+            <svg class="icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 7h18v13a1 1 0 01-1 1H4a1 1 0 01-1-1V7zm0-2a2 2 0 012-2h2l2 2h6l2-2h2a2 2 0 012 2v2H3V5z"/></svg>
+          </div>
+          <div>
+            <div class="card-title-strong">Your Recent Projects</div>
+            <div class="card-sub">Recent projects you created. Click Open to view details.</div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Project Code</th>
+                <th>Name</th>
+                <th>Created</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in recent_projects %}
+              <tr>
+                <td class="font-mono">{{ p.project_code or '—' }}</td>
+                <td>{{ p.name }}</td>
+                <td class="text-muted">{{ p.created_at.strftime('%b %d, %Y') if p.created_at else '—' }}</td>
+                <td><a href="{{ url_for('project_detail', project_id=p.id) }}" class="action-link">Open</a></td>
+              </tr>
+              {% else %}
+              <tr><td colspan="4">
+                <div class="empty-state">
+                  <svg class="empty-illustration" viewBox="0 0 160 100" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="100" rx="8" fill="#f3f5fb"/></svg>
+                  <div><strong>No projects yet</strong></div>
+                  <div class="page-sub">Create a new project from the Dashboard to see it here.</div>
+                </div>
+              </td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div id="toast" class="toast hidden" aria-live="polite"></div>
+
+  <script type="text/babel">
+  const { useState, useEffect } = React;
+
+  function showToast(message, ok=true){
+    const t = document.getElementById('toast');
+    t.textContent = message;
+    t.className = 'toast px-4 py-2 rounded-lg ' + (ok? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-error border border-red-100');
+    t.classList.remove('hidden');
+    setTimeout(()=> t.classList.add('hidden'), 3000);
+  }
+
+  function SettingsForm(){
+    const [loading, setLoading] = useState(true);
+    const [prefix, setPrefix] = useState('VC-BOQ');
+    const [mainStart, setMainStart] = useState(101);
+    const [subStart, setSubStart] = useState(1);
+    const [errors, setErrors] = useState({});
+    const [saving, setSaving] = useState(false);
+    const [saved, setSaved] = useState(false);
+
+    useEffect(()=>{ fetchSettings(); }, []);
+
+    async function fetchSettings(){
+      try{
+        const res = await fetch('/api/settings/project-id');
+        const j = await res.json();
+        if (j.success && j.settings){
+          setPrefix(j.settings.default_prefix || 'VC-BOQ');
+          setMainStart(j.settings.main_sequence_start || 101);
+          setSubStart(j.settings.sub_sequence_start || 1);
+        }
+      }catch(e){ console.warn(e); showToast('Failed to load settings', false); }
+      setLoading(false);
+    }
+
+    function validate(){
+      const e = {};
+      if (!/^[A-Z0-9-]{2,12}$/i.test(prefix.trim())) e.prefix = 'Use letters, numbers or hyphen (2-12 chars)';
+      if (!(Number.isInteger(Number(mainStart)) && Number(mainStart) > 0)) e.main = 'Enter a positive integer';
+      if (!(Number.isInteger(Number(subStart)) && Number(subStart) >= 0)) e.sub = 'Enter 0 or a positive integer';
+      setErrors(e);
+      return Object.keys(e).length === 0;
+    }
+
+    async function handleSave(){
+      if (!validate()) return showToast('Fix validation errors', false);
+      const payload = { default_prefix: prefix.trim().toUpperCase(), main_sequence_start: Number(mainStart), sub_sequence_start: Number(subStart) };
+      setSaving(true); setSaved(false);
+      try{
+        const res = await fetch('/api/settings/project-id',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+        const j = await res.json();
+        if (j.success) {
+          showToast('Settings saved');
+          setSaved(true);
+          setTimeout(()=> setSaved(false), 1400);
+        }
+        else showToast(j.error || 'Error saving', false);
+      }catch(e){ console.error(e); showToast('Network error', false); }
+      setSaving(false);
+    }
+
+    function handleReset(){
+      setPrefix('VC-BOQ'); setMainStart(101); setSubStart(1); showToast('Defaults restored');
+    }
+
+    return (
+      <div>
+        <div className="card-title">Project ID Settings</div>
+        <div className="card-sub">Configure default prefix and starting sequence numbers for generated Project IDs.</div>
+
+        <div className="form-row">
+          <label className="label">Default Project Prefix</label>
+          <div className="input-group">
+            <div className="input-icon">Aa</div>
+            <input className={"input input-with-icon " + (errors.prefix? 'error':'')} value={prefix} onChange={e=>setPrefix(e.target.value)} maxLength={12} />
+          </div>
+          <div className="helper">Letters, numbers and hyphen allowed (e.g. VC-BOQ)</div>
+          {errors.prefix && <div className="error-text">{errors.prefix}</div>}
+        </div>
+
+        <div className="row">
+          <div className="col form-row">
+            <label className="label">Main Start</label>
+            <div className="input-group">
+              <div className="input-icon">#</div>
+              <input className={"input input-with-icon " + (errors.main? 'error':'' )} type="number" value={mainStart} onChange={e=>setMainStart(e.target.value)} />
+            </div>
+            {errors.main && <div className="error-text">{errors.main}</div>}
+          </div>
+          <div className="col form-row">
+            <label className="label">Sub Start</label>
+            <div className="input-group">
+              <div className="input-icon">#</div>
+              <input className={"input input-with-icon " + (errors.sub? 'error':'' )} type="number" value={subStart} onChange={e=>setSubStart(e.target.value)} />
+            </div>
+            {errors.sub && <div className="error-text">{errors.sub}</div>}
+          </div>
+        </div>
+
+        <div className="actions">
+          <button className="btn" onClick={handleReset} aria-label="Reset settings">Reset</button>
+          <button className={"btn btn-primary" + (saved? ' saved':'')} onClick={handleSave} aria-live="polite" disabled={saving}>
+            <span className="btn-check">
+              {saving ? <span className="spinner" aria-hidden></span> : (saved ? <svg className="checkmark" viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path fill="#fff" d="M20.3 6.3l-11 11a1 1 0 01-1.4 0l-5-5 1.4-1.4 3.6 3.6 9.3-9.3 1.8 1.8z"/></svg> : <span className="btn-text">Save</span>)}
+            </span>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Mount component
+  ReactDOM.createRoot(document.getElementById('settings-form-root')).render(React.createElement(SettingsForm));
+  </script>
+</body>
+</html>

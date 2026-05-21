@@ -102,7 +102,7 @@ html,body{height:100%;margin:0;padding:0;font-family:'Hanken Grotesk',sans-serif
   .sidebar-toggle{display:flex}
   .page-content{padding:16px 16px 90px}
 }
-@media(max-width:1024px){
+@media(min-width:769px) and (max-width:1024px){
   .sidebar{width:220px}
   .main-wrap{margin-left:220px}
 }
@@ -110,6 +110,61 @@ html,body{height:100%;margin:0;padding:0;font-family:'Hanken Grotesk',sans-serif
 .file-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
 @media(max-width:640px){.file-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:400px){.file-grid{grid-template-columns:1fr}}
+
+body{overflow-x:hidden}
+button,a,input,select,textarea{touch-action:manipulation}
+@media(max-width:1024px){
+  .page-content{padding:24px 24px 88px}
+  #tab-files > div,
+  #tab-ai-chat > div{grid-template-columns:1fr!important;gap:22px!important}
+  .file-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .card{border-radius:14px}
+}
+@media(max-width:768px){
+  html,body{width:100%;max-width:100%;overflow-x:hidden;font-size:15px}
+  .layout{width:100%;min-height:100dvh;height:100dvh;overflow:hidden}
+  .sidebar{width:min(84vw,300px);box-shadow:18px 0 50px rgba(13,33,55,.18)}
+  .main-wrap{width:100%;min-width:0;margin-left:0!important;height:100dvh}
+  .sidebar-toggle{display:flex!important;align-items:center;justify-content:center;width:42px;height:42px;margin-right:4px!important;border-radius:12px!important}
+  .top-bar{height:58px;padding:0 12px;gap:8px;position:sticky;top:0}
+  .top-bar nav{display:none!important}
+  .top-bar [style*="gap:8px"] button{min-width:40px;min-height:40px}
+  .page-content{width:100%;max-width:100%;padding:18px 14px 82px;overflow-x:hidden}
+  .page-content *{max-width:100%}
+  .page-content h1{font-size:clamp(24px,8vw,30px)!important;line-height:1.15!important}
+  .main-tab-btn{flex:0 0 auto;padding:12px 14px;font-size:14px;gap:6px;min-height:48px;white-space:nowrap}
+  #tab-files > div,
+  #tab-ai-chat > div{display:grid!important;grid-template-columns:1fr!important;gap:20px!important}
+  #subtab-drawing > div:first-child,
+  #subtab-output > div:first-child{align-items:flex-start!important;gap:12px;flex-wrap:wrap}
+  #subtab-drawing > div:first-child button,
+  #subtab-output > div:first-child button{min-height:48px;padding:12px 16px}
+  .file-grid{grid-template-columns:1fr!important;gap:12px}
+  .file-card{width:100%;border-radius:14px;padding:14px!important}
+  .card{width:100%;border-radius:14px;box-shadow:0 8px 24px rgba(13,33,55,.06)}
+  .card[style*="padding:20px"],
+  .card[style*="padding:18px"],
+  .card[style*="padding:16px"]{padding:16px!important}
+  textarea,input,select{font-size:16px!important;min-height:48px}
+  button{min-height:44px}
+  .chat-bubble{max-width:calc(100vw - 82px);font-size:14px;padding:12px 14px}
+  #chat-input{min-height:52px}
+  #send-btn{width:52px;height:52px;padding:0!important;justify-content:center}
+  .modal-box{max-width:calc(100vw - 24px)!important;max-height:90dvh;border-radius:18px}
+  .overlay{padding:12px}
+  #viewer-filename{max-width:calc(100vw - 170px)!important}
+  #viewer-download-btn{width:42px;height:42px;padding:0!important;justify-content:center;overflow:hidden}
+  #viewer-download-btn span{margin:0}
+  #upload-drop{padding:28px 16px!important}
+}
+@media(max-width:420px){
+  .page-content{padding-left:12px;padding-right:12px}
+  .main-tab-btn{padding-left:12px;padding-right:12px;font-size:13px}
+  #subtab-drawing > div:first-child button,
+  #subtab-output > div:first-child button{width:100%;justify-content:center}
+  .chat-msg{gap:8px}
+  .chat-avatar{width:32px;height:32px}
+}
 </style>
 </head>
 <body>

@@ -98,8 +98,10 @@ def fmt_duration(seconds):
 
 
 def sanitize_project_prefix(prefix):
-    cleaned = ''.join(ch for ch in (prefix or '').upper().strip() if ch.isalnum())
-    return (cleaned or 'VKS')[:12]
+    # Allow A-Z, 0-9 and hyphen. Uppercase and trim to 12 chars by default.
+    cleaned = ''.join(ch for ch in (prefix or '').upper().strip() if (ch.isalnum() or ch == '-'))
+    cleaned = cleaned.strip('-')
+    return (cleaned or 'VC-BOQ')[:12]
 
 
 def normalize_india_phone(value):
@@ -129,17 +131,17 @@ def ensure_project_identity_schema(cursor):
         FROM INFORMATION_SCHEMA.COLUMNS
         WHERE TABLE_SCHEMA = DATABASE()
           AND TABLE_NAME = 'projects'
-          AND COLUMN_NAME IN ('project_code', 'project_prefix', 'project_year', 'project_sequence')
+          AND COLUMN_NAME IN ('project_code', 'project_prefix', 'project_main_sequence', 'project_sub_sequence')
     """)
     existing_cols = {row['COLUMN_NAME'] for row in cursor.fetchall()}
     if 'project_code' not in existing_cols:
         cursor.execute("ALTER TABLE projects ADD COLUMN project_code VARCHAR(50) DEFAULT NULL AFTER id")
     if 'project_prefix' not in existing_cols:
-        cursor.execute("ALTER TABLE projects ADD COLUMN project_prefix VARCHAR(20) DEFAULT NULL AFTER project_code")
-    if 'project_year' not in existing_cols:
-        cursor.execute("ALTER TABLE projects ADD COLUMN project_year SMALLINT DEFAULT NULL AFTER project_prefix")
-    if 'project_sequence' not in existing_cols:
-        cursor.execute("ALTER TABLE projects ADD COLUMN project_sequence INT DEFAULT NULL AFTER project_year")
+        cursor.execute("ALTER TABLE projects ADD COLUMN project_prefix VARCHAR(40) DEFAULT NULL AFTER project_code")
+    if 'project_main_sequence' not in existing_cols:
+        cursor.execute("ALTER TABLE projects ADD COLUMN project_main_sequence INT DEFAULT NULL AFTER project_prefix")
+    if 'project_sub_sequence' not in existing_cols:
+        cursor.execute("ALTER TABLE projects ADD COLUMN project_sub_sequence INT DEFAULT NULL AFTER project_main_sequence")
 
     cursor.execute("""
         SELECT INDEX_NAME
@@ -154,32 +156,44 @@ def ensure_project_identity_schema(cursor):
 
 
 def generate_project_code(cursor, prefix=None, year=None):
+    # New generation logic: {PREFIX}-{MAIN}-{SUB}
     prefix = sanitize_project_prefix(prefix)
-    year = normalize_project_year(year)
-    code_prefix = f"{prefix}-{year}-"
+    # Load settings if available
+    try:
+        cursor.execute("SELECT default_prefix, main_sequence_start, sub_sequence_start FROM project_id_settings WHERE id = 1")
+        s = cursor.fetchone() or {}
+    except Exception:
+        s = {}
+    start_main = int(s.get('main_sequence_start') or 101)
+    start_sub = int(s.get('sub_sequence_start') or 1)
+    # If no prefix provided, use configured default_prefix
+    if not prefix:
+        prefix = sanitize_project_prefix(s.get('default_prefix'))
+    # Find latest main sequence for this prefix
     cursor.execute("""
-        SELECT project_code, project_sequence
+        SELECT project_main_sequence AS main, MAX(project_sub_sequence) AS max_sub
         FROM projects
-        WHERE project_code LIKE %s
-           OR (project_prefix = %s AND project_year = %s)
-           OR project_code IS NULL
-        ORDER BY COALESCE(project_sequence, 0) DESC, project_code DESC
-    """, (code_prefix + '%', prefix, year))
-    rows = cursor.fetchall()
-    max_num = 0
-    for row in rows:
-        candidates = []
-        if row.get('project_sequence'):
-            candidates.append(row['project_sequence'])
-        if row.get('project_code'):
-            try:
-                candidates.append(int(row['project_code'].split('-')[-1]))
-            except (ValueError, IndexError):
-                pass
-        if candidates:
-            max_num = max(max_num, *candidates)
-    next_num = max(max_num, len(rows)) + 1
-    return f"{code_prefix}{next_num:03d}", prefix, year, next_num
+        WHERE project_prefix = %s
+        GROUP BY project_main_sequence
+        ORDER BY project_main_sequence DESC
+        LIMIT 1
+    """, (prefix,))
+    row = cursor.fetchone()
+    if row and row.get('main'):
+        main = int(row['main'])
+        sub = int(row.get('max_sub') or 0) + 1
+    else:
+        main = start_main
+        sub = start_sub
+
+    # Ensure uniqueness (skip existing codes)
+    while True:
+        code = f"{prefix}-{main}-{int(sub):02d}"
+        cursor.execute("SELECT id FROM projects WHERE project_code = %s", (code,))
+        if not cursor.fetchone():
+            break
+        sub += 1
+    return code, prefix, main, sub
 
 
 def file_icon(file_type):
@@ -612,14 +626,21 @@ def dashboard():
 @login_required
 def create_project():
     data = request.get_json(silent=True) or request.form
-
     project_prefix = sanitize_project_prefix(data.get('projectPrefix'))
-    project_year = normalize_project_year(data.get('projectYear'))
+    # Prefer explicit 'other' values when provided from the UI
+    raw_job_position = (data.get('jobPosition') or '').strip()
+    job_position_other = (data.get('jobPositionOther') or '').strip()
+    job_position = job_position_other or raw_job_position
+
+    raw_project_type = (data.get('projectType') or '').strip()
+    project_type_other = (data.get('projectTypeOther') or '').strip()
+    project_type = project_type_other or raw_project_type
+
     name        = (data.get('projectName') or '').strip()
     company_name = (data.get('companyName') or '').strip()
     customer_name = (data.get('customerName') or '').strip()
     client_name = (data.get('clientName') or '').strip() or customer_name
-    job_position = (data.get('jobPosition') or '').strip()
+    # job_position / project_type already determined above
     contact_number = normalize_india_phone(data.get('contactNumber'))
     whatsapp_number = normalize_india_phone(data.get('whatsappNumber'))
     email_id = (data.get('emailId') or '').strip()
@@ -628,7 +649,6 @@ def create_project():
     district = (data.get('district') or '').strip()
     state = (data.get('state') or '').strip()
     country = (data.get('country') or 'India').strip() or 'India'
-    project_type = (data.get('projectType') or '').strip()
     project_location = (data.get('projectLocation') or '').strip()
     building_area_details = data.get('buildingAreaDetails') or []
     total_builtup_area = data.get('totalBuiltupArea') or 0
@@ -652,11 +672,10 @@ def create_project():
         conn   = get_db()
         cursor = conn.cursor()
         ensure_project_identity_schema(cursor)
-
-        project_code, project_prefix, project_year, project_sequence = generate_project_code(cursor, project_prefix, project_year)
+        project_code, project_prefix, project_main_sequence, project_sub_sequence = generate_project_code(cursor, project_prefix)
         cursor.execute("""
             INSERT INTO projects (
-                project_code, project_prefix, project_year, project_sequence,
+                project_code, project_prefix, project_main_sequence, project_sub_sequence,
                 name, client_name, company_name, customer_name,
                 job_position, contact_number, whatsapp_number, email_id,
                 address, city, district, state, country, project_type,
@@ -665,7 +684,7 @@ def create_project():
             )
             VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
         """, (
-            project_code, project_prefix, project_year, project_sequence,
+            project_code, project_prefix, project_main_sequence, project_sub_sequence,
             name, client_name, company_name, customer_name,
             job_position, contact_number or None, whatsapp_number or None, email_id,
             address, city, district, state, country, project_type,
@@ -701,10 +720,9 @@ def next_project_code():
         conn = get_db()
         cursor = conn.cursor()
         ensure_project_identity_schema(cursor)
-        project_code, prefix, year, sequence = generate_project_code(
+        project_code, prefix, main_sequence, sub_sequence = generate_project_code(
             cursor,
-            request.args.get('prefix'),
-            request.args.get('year')
+            request.args.get('prefix')
         )
         conn.commit()
         conn.close()
@@ -712,11 +730,92 @@ def next_project_code():
             'success': True,
             'projectCode': project_code,
             'prefix': prefix,
-            'year': year,
-            'sequence': sequence
+            'main_sequence': main_sequence,
+            'sub_sequence': sub_sequence
         })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/settings/project-id', methods=['GET', 'POST'])
+@login_required
+def project_id_settings():
+    # Admin-only in production; here we assume logged-in users can access
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        # Ensure settings table exists (create if missing)
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS project_id_settings (
+                id INT PRIMARY KEY DEFAULT 1,
+                default_prefix VARCHAR(40) NOT NULL DEFAULT 'VC-BOQ',
+                main_sequence_start INT NOT NULL DEFAULT 101,
+                sub_sequence_start INT NOT NULL DEFAULT 1,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        ''')
+        conn.commit()
+
+        if request.method == 'GET':
+            cursor.execute("SELECT default_prefix, main_sequence_start, sub_sequence_start FROM project_id_settings WHERE id = 1")
+            row = cursor.fetchone() or {}
+            conn.close()
+            return jsonify({'success': True, 'settings': row})
+
+        # POST - upsert settings
+        data = request.get_json(silent=True) or request.form
+        default_prefix = sanitize_project_prefix(data.get('default_prefix') or data.get('defaultPrefix') or 'VC-BOQ')
+        try:
+            main_start = int(data.get('main_sequence_start') or data.get('mainStart') or 101)
+        except Exception:
+            main_start = 101
+        try:
+            sub_start = int(data.get('sub_sequence_start') or data.get('subStart') or 1)
+        except Exception:
+            sub_start = 1
+
+        cursor.execute("INSERT INTO project_id_settings (id, default_prefix, main_sequence_start, sub_sequence_start) VALUES (1,%s,%s,%s) ON DUPLICATE KEY UPDATE default_prefix=VALUES(default_prefix), main_sequence_start=VALUES(main_sequence_start), sub_sequence_start=VALUES(sub_sequence_start)",
+                       (default_prefix, main_start, sub_start))
+        conn.commit()
+        conn.close()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/settings')
+@login_required
+def settings():
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        # Ensure settings table exists
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS project_id_settings (
+                id INT PRIMARY KEY DEFAULT 1,
+                default_prefix VARCHAR(40) NOT NULL DEFAULT 'VC-BOQ',
+                main_sequence_start INT NOT NULL DEFAULT 101,
+                sub_sequence_start INT NOT NULL DEFAULT 1,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        ''')
+        conn.commit()
+        cursor.execute('SELECT default_prefix, main_sequence_start, sub_sequence_start FROM project_id_settings WHERE id = 1')
+        settings_row = cursor.fetchone() or {}
+        # Get recent projects to display
+        user_id = session.get('user_id')
+        if user_id:
+            cursor.execute('SELECT id, project_code, name, created_at FROM projects WHERE created_by = %s ORDER BY created_at DESC LIMIT 50', (user_id,))
+        else:
+            cursor.execute('SELECT id, project_code, name, created_at FROM projects ORDER BY created_at DESC LIMIT 50')
+        recent_projects = cursor.fetchall()
+        conn.close()
+        return render_template('settings.html', settings=settings_row, recent_projects=recent_projects)
+    except Exception as e:
+        flash(f'Error loading settings: {e}', 'error')
+        return redirect(url_for('dashboard'))
 
 
 @app.route('/project/<int:project_id>/update', methods=['POST'])

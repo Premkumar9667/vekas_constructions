@@ -25,9 +25,9 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS projects (
     id          INT AUTO_INCREMENT PRIMARY KEY,
     project_code VARCHAR(50) UNIQUE DEFAULT NULL,
-    project_prefix VARCHAR(20) DEFAULT NULL,
-    project_year SMALLINT DEFAULT NULL,
-    project_sequence INT DEFAULT NULL,
+    project_prefix VARCHAR(40) DEFAULT NULL,
+    project_main_sequence INT DEFAULT NULL,
+    project_sub_sequence INT DEFAULT NULL,
     name        VARCHAR(255) NOT NULL,
     client_name VARCHAR(255) DEFAULT NULL,
     company_name VARCHAR(255) DEFAULT NULL,
@@ -160,3 +160,26 @@ ON DUPLICATE KEY UPDATE
 -- Or run this from Python to generate a real hash:
 --   from werkzeug.security import generate_password_hash
 --   print(generate_password_hash('YourPassword'))
+
+-- ------------------------------------------------------------
+-- PROJECT ID SETTINGS
+-- ------------------------------------------------------------
+-- CREATE TABLE IF NOT EXISTS project_id_settings (
+--     id INT PRIMARY KEY DEFAULT 1,
+--     default_prefix VARCHAR(40) NOT NULL DEFAULT 'VC-BOQ',
+--     main_sequence_start INT NOT NULL DEFAULT 101,
+--     sub_sequence_start INT NOT NULL DEFAULT 1,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+-- );
+
+-- run in your MySQL client
+CREATE TABLE IF NOT EXISTS project_id_settings (
+  id INT PRIMARY KEY DEFAULT 1,
+  default_prefix VARCHAR(40) NOT NULL DEFAULT 'VC-BOQ',
+  main_sequence_start INT NOT NULL DEFAULT 101,
+  sub_sequence_start INT NOT NULL DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
